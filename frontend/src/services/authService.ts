@@ -63,8 +63,8 @@ const authService = {
    * Mevcut kullanıcı profilini getirir.
    */
   async getProfile(): Promise<User> {
-    const { data } = await api.get<{ data: User }>('/auth/profile');
-    return data.data;
+    const { data } = await api.get<{ user: User }>('/auth/me');
+    return data.user;
   },
 
   /**
