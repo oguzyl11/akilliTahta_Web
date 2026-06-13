@@ -10,3 +10,5 @@ export { Card, CardHeader, CardContent } from './Card';
 export { Modal } from './Modal';
 export { Avatar } from './Avatar';
 export { Spinner, PageLoader, SkeletonLine, SkeletonCard } from './Spinner';
+export { StatCard } from './StatCard';
+export { RecentActivityTable } from './RecentActivityTable';

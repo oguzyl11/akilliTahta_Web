@@ -7,6 +7,7 @@
 import React, { useState } from 'react';
 import { cn } from '@/utils/helpers';
 import { useAuthStore } from '@/stores/authStore';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, Badge } from '@/components/ui';
 import { Bell, Search, Menu, X, ChevronDown, Settings, LogOut, User } from 'lucide-react';
 import { ROLE_LABELS } from '@/utils/constants';
@@ -72,44 +73,52 @@ export function Navbar({ onMobileMenuToggle, isMobileMenuOpen }: NavbarProps) {
             </button>
 
             {/* Notifications Dropdown */}
-            {isNotificationsOpen && (
-              <div className="absolute right-0 top-full mt-2 w-80 rounded-2xl border border-slate-700/50 bg-slate-800 shadow-2xl shadow-black/30 overflow-hidden">
-                <div className="px-4 py-3 border-b border-slate-700/50 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-200">Bildirimler</h3>
-                  <Badge variant="info">3 yeni</Badge>
-                </div>
-                <div className="max-h-80 overflow-y-auto">
-                  {/* Sample notifications */}
-                  {[
-                    { title: 'Yeni ödev atandı', body: 'Matematik - Bölüm 3 ödevi atandı.', time: '5 dk önce', unread: true },
-                    { title: 'Test sonucu', body: 'Fen Bilimleri testinden 85 puan aldınız.', time: '1 saat önce', unread: true },
-                    { title: 'Kitap eklendi', body: 'Türkçe 8. Sınıf kitabı kütüphanenize eklendi.', time: '3 saat önce', unread: false },
-                  ].map((notif, i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        'px-4 py-3 border-b border-slate-700/30 hover:bg-slate-700/30 cursor-pointer transition-colors',
-                        notif.unread && 'bg-indigo-500/5'
-                      )}
-                    >
-                      <div className="flex items-start gap-2">
-                        {notif.unread && <span className="mt-1.5 w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0" />}
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-slate-200 truncate">{notif.title}</p>
-                          <p className="text-xs text-slate-400 mt-0.5">{notif.body}</p>
-                          <p className="text-[10px] text-slate-500 mt-1">{notif.time}</p>
+            <AnimatePresence>
+              {isNotificationsOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute right-0 top-full mt-2 w-80 rounded-2xl border border-slate-700/50 bg-slate-800/95 backdrop-blur-xl shadow-2xl shadow-black/50 overflow-hidden"
+                >
+                  <div className="px-4 py-3 border-b border-slate-700/50 flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-slate-200">Bildirimler</h3>
+                    <Badge variant="info">3 yeni</Badge>
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {/* Sample notifications */}
+                    {[
+                      { title: 'Yeni ödev atandı', body: 'Matematik - Bölüm 3 ödevi atandı.', time: '5 dk önce', unread: true },
+                      { title: 'Test sonucu', body: 'Fen Bilimleri testinden 85 puan aldınız.', time: '1 saat önce', unread: true },
+                      { title: 'Kitap eklendi', body: 'Türkçe 8. Sınıf kitabı kütüphanenize eklendi.', time: '3 saat önce', unread: false },
+                    ].map((notif, i) => (
+                      <div
+                        key={i}
+                        className={cn(
+                          'px-4 py-3 border-b border-slate-700/30 hover:bg-slate-700/50 cursor-pointer transition-colors',
+                          notif.unread && 'bg-indigo-500/10'
+                        )}
+                      >
+                        <div className="flex items-start gap-2">
+                          {notif.unread && <span className="mt-1.5 w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0" />}
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-slate-200 truncate">{notif.title}</p>
+                            <p className="text-xs text-slate-400 mt-0.5">{notif.body}</p>
+                            <p className="text-[10px] text-slate-500 mt-1">{notif.time}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="px-4 py-3 text-center">
-                  <button className="text-xs text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
-                    Tümünü görüntüle
-                  </button>
-                </div>
-              </div>
-            )}
+                    ))}
+                  </div>
+                  <div className="px-4 py-3 text-center border-t border-slate-700/50">
+                    <button className="text-xs text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
+                      Tümünü görüntüle
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Separator */}
@@ -139,33 +148,41 @@ export function Navbar({ onMobileMenuToggle, isMobileMenuOpen }: NavbarProps) {
             </button>
 
             {/* Profile Dropdown Menu */}
-            {isProfileOpen && (
-              <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-slate-700/50 bg-slate-800 shadow-2xl shadow-black/30 overflow-hidden">
-                <div className="px-4 py-3 border-b border-slate-700/50">
-                  <p className="text-sm font-medium text-slate-200">{user.name}</p>
-                  <p className="text-xs text-slate-500 truncate">{user.email}</p>
-                </div>
-                <div className="py-1">
-                  <button className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-300 hover:text-slate-100 hover:bg-slate-700/50 transition-colors">
-                    <User size={16} className="text-slate-500" />
-                    Profil
-                  </button>
-                  <button className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-300 hover:text-slate-100 hover:bg-slate-700/50 transition-colors">
-                    <Settings size={16} className="text-slate-500" />
-                    Ayarlar
-                  </button>
-                </div>
-                <div className="border-t border-slate-700/50 py-1">
-                  <button
-                    onClick={() => logout()}
-                    className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                  >
-                    <LogOut size={16} />
-                    Çıkış Yap
-                  </button>
-                </div>
-              </div>
-            )}
+            <AnimatePresence>
+              {isProfileOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-slate-700/50 bg-slate-800/95 backdrop-blur-xl shadow-2xl shadow-black/50 overflow-hidden"
+                >
+                  <div className="px-4 py-3 border-b border-slate-700/50">
+                    <p className="text-sm font-medium text-slate-200">{user.name}</p>
+                    <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                  </div>
+                  <div className="py-1">
+                    <button className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-300 hover:text-slate-100 hover:bg-slate-700/50 transition-colors">
+                      <User size={16} className="text-slate-500" />
+                      Profil
+                    </button>
+                    <button className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-slate-300 hover:text-slate-100 hover:bg-slate-700/50 transition-colors">
+                      <Settings size={16} className="text-slate-500" />
+                      Ayarlar
+                    </button>
+                  </div>
+                  <div className="border-t border-slate-700/50 py-1">
+                    <button
+                      onClick={() => logout()}
+                      className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                    >
+                      <LogOut size={16} />
+                      Çıkış Yap
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

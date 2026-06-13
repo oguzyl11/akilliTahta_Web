@@ -1,158 +1,117 @@
 // =============================================================================
-// Super Admin Dashboard — Sistem genel görünümü
+// Admin Dashboard — Süper Admin Paneli
 // =============================================================================
 
 'use client';
 
 import React from 'react';
-import { PageHeader } from '@/components/common';
-import { Card, CardHeader, CardContent, Badge, Button } from '@/components/ui';
-import {
-  Building2, Users, BookOpen, Server,
-  TrendingUp, Plus, Activity, Shield,
-  ChevronRight, CheckCircle2, AlertTriangle,
-} from 'lucide-react';
-
-function StatCard({
-  icon: Icon, label, value, change, colorClass,
-}: {
-  icon: React.ElementType; label: string; value: string; change?: string; colorClass: string;
-}) {
-  return (
-    <Card hover className={colorClass}>
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{label}</p>
-          <p className="text-2xl font-bold text-white mt-1">{value}</p>
-          {change && (
-            <p className="text-xs text-emerald-400 mt-1 flex items-center gap-1">
-              <TrendingUp size={12} />{change}
-            </p>
-          )}
-        </div>
-        <div className="p-2.5 rounded-xl bg-white/5"><Icon size={22} className="text-slate-300" /></div>
-      </div>
-    </Card>
-  );
-}
+import { motion } from 'framer-motion';
+import { useAuthStore } from '@/stores/authStore';
+import { StatCard, RecentActivityTable } from '@/components/ui';
+import { Server, Building2, BookOpen, Users } from 'lucide-react';
 
 export default function AdminDashboard() {
-  return (
-    <div className="animate-fade-in">
-      <PageHeader
-        title="Sistem Yönetimi"
-        description="Tüm kurumlar, kullanıcılar ve sistem durumu."
-        action={
-          <Button leftIcon={<Plus size={18} />}>
-            Yeni Kurum Ekle
-          </Button>
-        }
-      />
+  const { user } = useAuthStore();
 
-      {/* System KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 stagger-children">
-        <StatCard icon={Building2} label="Toplam Kurum" value="12" change="+2 bu ay" colorClass="stat-card-indigo" />
-        <StatCard icon={Users} label="Toplam Kullanıcı" value="3,847" change="+156 bu ay" colorClass="stat-card-emerald" />
-        <StatCard icon={BookOpen} label="Toplam Kitap" value="187" change="+15 yeni" colorClass="stat-card-amber" />
-        <StatCard icon={Server} label="Sistem Uptime" value="99.9%" colorClass="stat-card-rose" />
+  const mockActivities = [
+    {
+      id: '1',
+      user: { name: 'Sistem Yöneticisi', role: 'SUPER_ADMIN' },
+      action: 'Yeni kurum eklendi',
+      target: 'Atatürk Lisesi',
+      time: '15 dk önce',
+      status: 'success' as const,
+    },
+    {
+      id: '2',
+      user: { name: 'Sistem Yöneticisi', role: 'SUPER_ADMIN' },
+      action: 'PDF işleme hatası',
+      target: 'Fizik 11. Sınıf',
+      time: '1 saat önce',
+      status: 'danger' as const,
+    },
+    {
+      id: '3',
+      user: { name: 'Sistem Yöneticisi', role: 'SUPER_ADMIN' },
+      action: 'Lisans güncellendi',
+      target: 'Demo Eğitim Kurumu',
+      time: '2 saat önce',
+      status: 'info' as const,
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-end">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h1 className="text-2xl font-bold text-slate-100">Sistem Yönetimi</h1>
+          <p className="text-slate-400 mt-1 text-sm">Tüm kurumlar ve sistem sağlığı.</p>
+        </motion.div>
       </div>
 
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <StatCard
+          title="Kayıtlı Kurumlar"
+          value="12"
+          icon={Building2}
+          color="indigo"
+          trend={{ value: 2, label: 'Bu ay eklenen', isPositive: true }}
+          delay={0.1}
+        />
+        <StatCard
+          title="Sistem Kullanıcıları"
+          value="15,420"
+          icon={Users}
+          color="emerald"
+          trend={{ value: 1250, label: 'Bu ay artış', isPositive: true }}
+          delay={0.2}
+        />
+        <StatCard
+          title="Merkezi İçerikler"
+          value="1,245"
+          icon={BookOpen}
+          color="amber"
+          trend={{ value: 45, label: 'Yeni işlenen PDF', isPositive: true }}
+          delay={0.3}
+        />
+        <StatCard
+          title="Sunucu Sağlığı"
+          value="%99.9"
+          icon={Server}
+          color="rose"
+          delay={0.4}
+        />
+      </div>
+
+      {/* Main Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Kurumlar */}
-        <div className="lg:col-span-2">
-          <Card gradient>
-            <CardHeader action={<Button variant="ghost" size="sm">Tümü <ChevronRight size={14} /></Button>}>
-              <h2 className="text-lg font-semibold text-slate-100">Kurumlar</h2>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {[
-                  { name: 'Atatürk İlkokulu', subdomain: 'ataturk', users: 450, license: 'Premium', active: true },
-                  { name: 'Fatih Koleji', subdomain: 'fatih', users: 320, license: 'Standard', active: true },
-                  { name: 'Mimar Sinan Ortaokulu', subdomain: 'msinan', users: 280, license: 'Premium', active: true },
-                  { name: 'Bilgi Koleji', subdomain: 'bilgi', users: 180, license: 'Basic', active: false },
-                ].map((tenant, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors cursor-pointer group"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/10 flex items-center justify-center flex-shrink-0">
-                      <Building2 size={18} className="text-indigo-400" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-slate-200">{tenant.name}</p>
-                        <Badge variant={tenant.active ? 'success' : 'danger'} dot>
-                          {tenant.active ? 'Aktif' : 'Pasif'}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-slate-500">{tenant.subdomain}.platform.com • {tenant.users} kullanıcı</p>
-                    </div>
-                    <Badge variant={tenant.license === 'Premium' ? 'info' : tenant.license === 'Standard' ? 'warning' : 'neutral'}>
-                      {tenant.license}
-                    </Badge>
-                    <ChevronRight size={16} className="text-slate-600 group-hover:text-indigo-400 transition-colors" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Charts Section (Placeholder) */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+          className="lg:col-span-2 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-xl flex items-center justify-center min-h-[400px]"
+        >
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-rose-500/20 flex items-center justify-center border border-rose-500/30">
+              <Server className="text-rose-400" size={32} />
+            </div>
+            <h3 className="text-lg font-medium text-slate-200">Sistem Yükü ve API Trafiği</h3>
+            <p className="text-sm text-slate-400 mt-2 max-w-sm mx-auto">
+              CPU, RAM kullanımı ve PDF Mikroservis işleme kuyruğu durum grafikleri burada yer alacaktır.
+            </p>
+          </div>
+        </motion.div>
 
-        {/* Sistem Durumu */}
-        <div className="space-y-6">
-          <Card gradient>
-            <CardHeader>
-              <h2 className="text-lg font-semibold text-slate-100">Sistem Durumu</h2>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {[
-                  { service: 'API Server', status: 'online', icon: CheckCircle2 },
-                  { service: 'PostgreSQL', status: 'online', icon: CheckCircle2 },
-                  { service: 'Redis Cache', status: 'online', icon: CheckCircle2 },
-                  { service: 'PDF Service', status: 'online', icon: CheckCircle2 },
-                  { service: 'Queue Worker', status: 'warning', icon: AlertTriangle },
-                ].map((svc, i) => (
-                  <div key={i} className="flex items-center justify-between py-2">
-                    <div className="flex items-center gap-2">
-                      <svc.icon
-                        size={14}
-                        className={svc.status === 'online' ? 'text-emerald-400' : 'text-amber-400'}
-                      />
-                      <span className="text-sm text-slate-300">{svc.service}</span>
-                    </div>
-                    <Badge variant={svc.status === 'online' ? 'success' : 'warning'} dot>
-                      {svc.status === 'online' ? 'Çalışıyor' : 'Uyarı'}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card gradient>
-            <CardHeader>
-              <h2 className="text-lg font-semibold text-slate-100">Son İşlemler</h2>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {[
-                  { text: 'Yeni kurum eklendi: Fatih Koleji', time: '1 saat önce' },
-                  { text: '15 kitap toplu yüklendi', time: '3 saat önce' },
-                  { text: 'Sistem güncellendi v2.1.0', time: 'Dün' },
-                ].map((log, i) => (
-                  <div key={i} className="flex items-start gap-2 py-1">
-                    <Activity size={12} className="text-indigo-400 mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="text-xs text-slate-300">{log.text}</p>
-                      <p className="text-[10px] text-slate-500">{log.time}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+        {/* Recent Activity */}
+        <div className="lg:col-span-1">
+          <RecentActivityTable title="Sistem Logları" data={mockActivities} delay={0.6} />
         </div>
       </div>
     </div>
