@@ -21,9 +21,4 @@ else
     echo "Artisan bulunamadı, Laravel kurulumu bekleniyor..."
 fi
 
-# İlk argüman `-` ile başlıyorsa (örn: -f, --help) onu komuta dahil et
-if [ "${1#-}" != "$1" ]; then
-    set -- php-fpm "$@"
-fi
-
 exec "$@"
