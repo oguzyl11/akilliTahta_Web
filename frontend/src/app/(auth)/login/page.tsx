@@ -233,15 +233,15 @@ export default function LoginPage() {
               {[
                 { role: 'Öğrenci', email: 'ogrenci@demo.com', color: 'from-emerald-500/10 to-teal-500/10 border-emerald-500/20 text-emerald-400' },
                 { role: 'Öğretmen', email: 'ogretmen@demo.com', color: 'from-sky-500/10 to-blue-500/10 border-sky-500/20 text-sky-400' },
-                { role: 'Veli', email: 'veli@demo.com', color: 'from-amber-500/10 to-orange-500/10 border-amber-500/20 text-amber-400' },
-                { role: 'Yönetici', email: 'admin@demo.com', color: 'from-purple-500/10 to-fuchsia-500/10 border-purple-500/20 text-purple-400' },
+                { role: 'Kurum Yöneticisi', email: 'yonetici@demo.com', color: 'from-amber-500/10 to-orange-500/10 border-amber-500/20 text-amber-400' },
+                { role: 'Süper Admin', email: 'admin@akillitahta.com', color: 'from-purple-500/10 to-fuchsia-500/10 border-purple-500/20 text-purple-400' },
               ].map((demo) => (
                 <button
                   key={demo.role}
                   type="button"
                   onClick={() => {
                     setEmail(demo.email);
-                    setPassword('demo1234');
+                    setPassword('12345678');
                     clearError();
                     setValidationErrors({});
                   }}
