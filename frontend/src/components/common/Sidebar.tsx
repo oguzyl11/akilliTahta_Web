@@ -8,6 +8,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/utils/helpers';
 import { useAuthStore } from '@/stores/authStore';
 import { SIDEBAR_MENUS, ROLE_LABELS } from '@/utils/constants';
@@ -40,13 +41,14 @@ export function Sidebar() {
   const roleLabel = ROLE_LABELS[user.role] || user.role;
 
   return (
-    <aside
+    <motion.aside
+      initial={false}
+      animate={{ width: isCollapsed ? 72 : 260 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       className={cn(
         'fixed left-0 top-0 bottom-0 z-40',
         'flex flex-col',
-        'bg-slate-900/95 backdrop-blur-xl border-r border-slate-700/50',
-        'transition-all duration-300 ease-out',
-        isCollapsed ? 'w-[72px]' : 'w-[260px]'
+        'bg-slate-900/95 backdrop-blur-xl border-r border-slate-700/50'
       )}
     >
       {/* Logo & Tenant */}
@@ -54,14 +56,22 @@ export function Sidebar() {
         <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
           <BookOpen size={18} className="text-white" />
         </div>
-        {!isCollapsed && (
-          <div className="flex-1 min-w-0">
-            <h1 className="text-sm font-bold text-slate-100 truncate">
-              {tenant?.name || 'Dijital Eğitim'}
-            </h1>
-            <p className="text-[10px] text-slate-500 truncate">{roleLabel}</p>
-          </div>
-        )}
+        <AnimatePresence mode="wait">
+          {!isCollapsed && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+              className="flex-1 min-w-0"
+            >
+              <h1 className="text-sm font-bold text-slate-100 truncate">
+                {tenant?.name || 'Dijital Eğitim'}
+              </h1>
+              <p className="text-[10px] text-slate-500 truncate">{roleLabel}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Navigation */}
@@ -92,9 +102,23 @@ export function Sidebar() {
                   isActive ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'
                 )}
               />
-              {!isCollapsed && <span>{item.label}</span>}
+              <AnimatePresence>
+                {!isCollapsed && (
+                  <motion.span
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 'auto' }}
+                    exit={{ opacity: 0, width: 0 }}
+                    className="whitespace-nowrap overflow-hidden"
+                  >
+                    {item.label}
+                  </motion.span>
+                )}
+              </AnimatePresence>
               {isActive && !isCollapsed && (
-                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                <motion.div
+                  layoutId="activeTab"
+                  className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-400"
+                />
               )}
             </Link>
           );
@@ -112,12 +136,19 @@ export function Sidebar() {
           )}
         >
           <Avatar name={user.name} src={user.avatarUrl} size="sm" />
-          {!isCollapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-slate-200 truncate">{user.name}</p>
-              <p className="text-[10px] text-slate-500 truncate">{user.email}</p>
-            </div>
-          )}
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.div
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }}
+                className="flex-1 min-w-0 whitespace-nowrap overflow-hidden"
+              >
+                <p className="text-sm font-medium text-slate-200 truncate">{user.name}</p>
+                <p className="text-[10px] text-slate-500 truncate">{user.email}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Logout */}
@@ -132,7 +163,18 @@ export function Sidebar() {
           title="Çıkış Yap"
         >
           <LogOut size={18} />
-          {!isCollapsed && <span>Çıkış Yap</span>}
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.span
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }}
+                className="whitespace-nowrap overflow-hidden"
+              >
+                Çıkış Yap
+              </motion.span>
+            )}
+          </AnimatePresence>
         </button>
 
         {/* Collapse Toggle */}
@@ -147,6 +189,6 @@ export function Sidebar() {
           {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </button>
       </div>
-    </aside>
+    </motion.aside>
   );
 }
