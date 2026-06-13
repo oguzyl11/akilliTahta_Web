@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Traits\BelongsToTenant;
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -11,6 +11,7 @@ class Book extends Model
     use HasFactory, BelongsToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'title',
         'subject',
         'grade_level',
@@ -18,24 +19,16 @@ class Book extends Model
         'pdf_url',
         'pdf_size_bytes',
         'version',
-        'render_status',
+        'render_status', // pending, processing, completed, failed
         'page_count',
-        'created_by',
+        'created_by'
     ];
 
     /**
-     * Get the pages of the book.
+     * Get the pages for the book.
      */
     public function pages()
     {
-        return $this->hasMany(BookPage::class);
-    }
-
-    /**
-     * Get the user who created the book.
-     */
-    public function creator()
-    {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->hasMany(BookPage::class)->orderBy('page_number');
     }
 }

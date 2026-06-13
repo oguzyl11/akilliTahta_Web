@@ -15,7 +15,7 @@ class BookPage extends Model
         'image_url',
         'image_width',
         'image_height',
-        'text_coords',
+        'text_coords'
     ];
 
     protected $casts = [
@@ -28,13 +28,5 @@ class BookPage extends Model
     public function book()
     {
         return $this->belongsTo(Book::class);
-    }
-
-    /**
-     * Get the hotspots for the page.
-     */
-    public function hotspots()
-    {
-        return $this->hasMany(Hotspot::class);
     }
 }
