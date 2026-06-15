@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\WebhookController;
 use App\Http\Controllers\Api\V1\ClassroomController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\AssignmentController;
+use App\Http\Controllers\Api\V1\EditorController;
 
 Route::get('/health', function () {
     return response()->json(['status' => 'healthy']);
@@ -42,6 +43,10 @@ Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
     
     // Assignments
     Route::apiResource('assignments', AssignmentController::class)->only(['index', 'store']);
+    
+    // Editor (Hotspots)
+    Route::get('/editor/books/{book_id}/pages', [EditorController::class, 'getPages']);
+    Route::post('/editor/pages/{page_id}/hotspots', [EditorController::class, 'storeHotspot']);
     
     // Dashboard
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);

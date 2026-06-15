@@ -1,35 +1,285 @@
 // =============================================================================
-// Institution Editor Page — İçerik Editörü 
-// MOD-15: PDF zenginleştirme editörü için placeholder
+// Institution Editor Page — İnteraktif PDF Editörü
+// MOD-15: Kitap sayfalarına hotspot, video ve soru ekleme
 // =============================================================================
 
 'use client';
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Edit3, Sparkles } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { PlayCircle, HelpCircle, Link as LinkIcon, Save, X, Loader2, ChevronLeft, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui';
+import api from '@/services/api';
+import toast from 'react-hot-toast';
+
+interface Hotspot {
+  id: string | number;
+  type: 'video' | 'question' | 'link';
+  x: number; // Yüzde olarak (0-100)
+  y: number; // Yüzde olarak
+  width: number; // Yüzde olarak
+  height: number; // Yüzde olarak
+}
+
+interface BookPage {
+  id: number;
+  page_number: number;
+  image_url: string;
+  hotspots: Hotspot[];
+}
 
 export default function InstitutionEditorPage() {
+  const [pages, setPages] = useState<BookPage[]>([]);
+  const [activePage, setActivePage] = useState<BookPage | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Çizim state'leri
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+  const [currentBox, setCurrentBox] = useState<{ x: number, y: number, w: number, h: number } | null>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+
+  // Modal state'i
+  const [showModal, setShowModal] = useState(false);
+  const [hotspotType, setHotspotType] = useState<'video' | 'question' | 'link'>('video');
+
+  useEffect(() => {
+    // Veritabanındaki en son eklenen kitabı (seeder ile oluşturduğumuz) çekiyoruz
+    const fetchEditorData = async () => {
+      try {
+        const response = await api.get('/editor/books/latest/pages');
+        if (response.data?.status === 'success') {
+          const fetchedPages = response.data.data.pages;
+          setPages(fetchedPages);
+          if (fetchedPages.length > 0) setActivePage(fetchedPages[0]);
+        }
+      } catch (error) {
+        console.error('Editör verileri yüklenemedi:', error);
+        toast.error('Editör verileri çekilemedi.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchEditorData();
+  }, []);
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!imageRef.current) return;
+    const rect = imageRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    
+    setIsDrawing(true);
+    setStartPos({ x, y });
+    setCurrentBox({ x, y, w: 0, h: 0 });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDrawing || !imageRef.current || !currentBox) return;
+    const rect = imageRef.current.getBoundingClientRect();
+    const currentX = ((e.clientX - rect.left) / rect.width) * 100;
+    const currentY = ((e.clientY - rect.top) / rect.height) * 100;
+
+    const x = Math.min(startPos.x, currentX);
+    const y = Math.min(startPos.y, currentY);
+    const w = Math.abs(currentX - startPos.x);
+    const h = Math.abs(currentY - startPos.y);
+
+    setCurrentBox({ x, y, w, h });
+  };
+
+  const handleMouseUp = () => {
+    if (!isDrawing) return;
+    setIsDrawing(false);
+    
+    // Çok küçük bir alan çizildiyse iptal et
+    if (currentBox && (currentBox.w < 2 || currentBox.h < 2)) {
+      setCurrentBox(null);
+      return;
+    }
+
+    setShowModal(true);
+  };
+
+  const saveHotspot = async () => {
+    if (!currentBox || !activePage) return;
+
+    try {
+      const payload = {
+        type: hotspotType,
+        x: currentBox.x,
+        y: currentBox.y,
+        width: currentBox.w,
+        height: currentBox.h
+      };
+
+      const response = await api.post(`/editor/pages/${activePage.id}/hotspots`, payload);
+      if (response.data?.status === 'success') {
+        toast.success('Hotspot başarıyla eklendi!');
+        
+        // Sayfanın hotspot listesini güncelle
+        const newHotspot = response.data.data;
+        setActivePage(prev => prev ? {...prev, hotspots: [...prev.hotspots, newHotspot]} : null);
+        
+        // Modal'ı kapat ve çizimi temizle
+        setShowModal(false);
+        setCurrentBox(null);
+      }
+    } catch (error) {
+      toast.error('Hotspot eklenirken hata oluştu.');
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="h-[calc(100vh-100px)] flex items-center justify-center">
+        <Loader2 className="animate-spin text-indigo-500" size={48} />
+      </div>
+    );
+  }
+
   return (
-    <div className="h-[calc(100vh-120px)] w-full bg-white/50 backdrop-blur-sm border border-slate-200 border-dashed rounded-3xl flex flex-col items-center justify-center text-center p-6">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-md"
-      >
-        <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-indigo-500/20">
-          <Edit3 size={32} className="text-white" />
-        </div>
-        <h1 className="text-2xl font-bold text-slate-800 mb-2">İnteraktif İçerik Editörü</h1>
-        <p className="text-slate-500 mb-8 leading-relaxed">
-          Bu alan, yüklediğiniz PDF kitaplarını interaktif hale getireceğiniz (videolar, testler ve hotspotlar ekleyeceğiniz) gelişmiş bir Canvas editörüne dönüştürülecektir. Çok yakında!
-        </p>
-        <Button leftIcon={<Sparkles size={18} />} className="bg-indigo-600 hover:bg-indigo-700 mx-auto" disabled>
-          Editörü Başlat
-        </Button>
-      </motion.div>
+    <div className="flex h-[calc(100vh-120px)] -mx-4 -mt-2">
+      {/* Sol Panel: Thumbnails */}
+      <div className="w-64 bg-slate-50 border-r border-slate-200 overflow-y-auto flex flex-col p-4 gap-4">
+        <h2 className="font-bold text-slate-800 text-sm mb-2">Sayfalar</h2>
+        {pages.map((page) => (
+          <div 
+            key={page.id}
+            onClick={() => { setActivePage(page); setCurrentBox(null); }}
+            className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all ${
+              activePage?.id === page.id ? 'border-indigo-500 shadow-md scale-105' : 'border-transparent hover:border-slate-300'
+            }`}
+          >
+            <div className="relative pt-[141%] bg-slate-200">
+              <img src={page.image_url} alt={`Sayfa ${page.page_number}`} className="absolute inset-0 w-full h-full object-cover" />
+              <div className="absolute bottom-0 inset-x-0 bg-black/50 text-white text-[10px] text-center py-1">
+                Sayfa {page.page_number}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Orta Panel: Editör Canvas */}
+      <div className="flex-1 bg-slate-100 overflow-auto relative p-8 flex justify-center items-start">
+        {activePage ? (
+          <div className="relative shadow-2xl bg-white max-w-full">
+            {/* Araç İpuçları */}
+            <div className="absolute -top-12 left-0 right-0 text-center text-slate-500 text-sm font-medium">
+              Sürükle bırak yaparak hotspot alanı çizin
+            </div>
+
+            {/* Görsel ve Etkileşim Katmanı */}
+            <div 
+              className="relative cursor-crosshair select-none"
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+            >
+              <img 
+                ref={imageRef}
+                src={activePage.image_url} 
+                alt={`Aktif Sayfa ${activePage.page_number}`} 
+                className="max-h-[80vh] w-auto pointer-events-none"
+              />
+
+              {/* Varolan Hotspotlar */}
+              {activePage.hotspots.map((hs) => (
+                <div
+                  key={hs.id}
+                  className={`absolute border-2 flex items-center justify-center bg-white/20 backdrop-blur-[2px] transition-all hover:bg-white/40 ${
+                    hs.type === 'video' ? 'border-rose-500 text-rose-600' :
+                    hs.type === 'question' ? 'border-indigo-500 text-indigo-600' :
+                    'border-emerald-500 text-emerald-600'
+                  }`}
+                  style={{
+                    left: `${hs.x}%`,
+                    top: `${hs.y}%`,
+                    width: `${hs.width}%`,
+                    height: `${hs.height}%`
+                  }}
+                >
+                  {hs.type === 'video' && <PlayCircle size={24} className="drop-shadow-md" />}
+                  {hs.type === 'question' && <HelpCircle size={24} className="drop-shadow-md" />}
+                  {hs.type === 'link' && <LinkIcon size={24} className="drop-shadow-md" />}
+                </div>
+              ))}
+
+              {/* Çizilen (Aktif) Hotspot Kutusu */}
+              {currentBox && (
+                <div
+                  className="absolute border-2 border-dashed border-sky-500 bg-sky-500/20 pointer-events-none"
+                  style={{
+                    left: `${currentBox.x}%`,
+                    top: `${currentBox.y}%`,
+                    width: `${currentBox.w}%`,
+                    height: `${currentBox.h}%`
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="m-auto text-slate-400 flex flex-col items-center">
+            <ImageIcon size={48} className="mb-2 opacity-50" />
+            <p>Seçili sayfa yok.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Hotspot Modal */}
+      <AnimatePresence>
+        {showModal && currentBox && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden"
+            >
+              <div className="bg-indigo-600 p-4 text-white flex justify-between items-center">
+                <h3 className="font-bold text-lg">Hotspot Ekle</h3>
+                <button onClick={() => { setShowModal(false); setCurrentBox(null); }} className="hover:bg-white/20 p-1 rounded-lg transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-6 space-y-6">
+                <p className="text-sm text-slate-500">Seçtiğiniz alana tıklandığında ne olacağını seçin:</p>
+                
+                <div className="grid grid-cols-3 gap-3">
+                  <button 
+                    onClick={() => setHotspotType('video')}
+                    className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${hotspotType === 'video' ? 'border-rose-500 bg-rose-50 text-rose-600' : 'border-slate-100 text-slate-500 hover:border-slate-300'}`}
+                  >
+                    <PlayCircle size={28} className="mb-2" />
+                    <span className="text-xs font-bold">Video</span>
+                  </button>
+                  <button 
+                    onClick={() => setHotspotType('question')}
+                    className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${hotspotType === 'question' ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-slate-100 text-slate-500 hover:border-slate-300'}`}
+                  >
+                    <HelpCircle size={28} className="mb-2" />
+                    <span className="text-xs font-bold">Soru</span>
+                  </button>
+                  <button 
+                    onClick={() => setHotspotType('link')}
+                    className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${hotspotType === 'link' ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-slate-100 text-slate-500 hover:border-slate-300'}`}
+                  >
+                    <LinkIcon size={28} className="mb-2" />
+                    <span className="text-xs font-bold">Link</span>
+                  </button>
+                </div>
+
+                <Button fullWidth onClick={saveHotspot} leftIcon={<Save size={18} />}>
+                  Kaydet
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
