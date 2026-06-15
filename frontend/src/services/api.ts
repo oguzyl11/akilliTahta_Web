@@ -32,6 +32,10 @@ api.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
+    // FormData gönderiliyorsa Content-Type'ı sil, Axios otomatik multipart boundary eklesin
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
     return config;
   },
   (error) => Promise.reject(error)
@@ -52,14 +56,15 @@ api.interceptors.response.use(
       window.location.href = '/login';
     }
 
-    // Hata mesajını standartlaştır
+    // Hata mesajını standartlaştır — response verisini de ekle
     const apiError: ApiError = {
       message: error.response?.data?.message || 'Bir hata oluştu. Lütfen tekrar deneyin.',
       errors: error.response?.data?.errors,
       statusCode: status,
     };
 
-    return Promise.reject(apiError);
+    // Orijinal response verisini de ekle (catch bloklarında erişilebilmesi için)
+    return Promise.reject({ ...apiError, response: error.response });
   }
 );
 

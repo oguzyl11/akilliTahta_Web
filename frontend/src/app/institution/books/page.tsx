@@ -82,8 +82,16 @@ export default function InstitutionBooksPage() {
         window.location.reload();
       }
     } catch (error: any) {
-      console.error('Yükleme hatası:', error?.response?.data || error);
-      toast.error(error?.response?.data?.message || 'Dosya yüklenirken bir hata oluştu. (Dosya boyutu çok büyük olabilir)');
+      console.error('Yükleme hatası:', error);
+      const msg = error?.message || error?.response?.data?.message || 'Dosya yüklenirken bir hata oluştu.';
+      const validationErrors = error?.errors;
+      if (validationErrors) {
+        // Laravel validation hatalarını göster
+        const firstError = Object.values(validationErrors).flat()[0] as string;
+        toast.error(firstError || msg);
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setIsUploading(false);
     }
