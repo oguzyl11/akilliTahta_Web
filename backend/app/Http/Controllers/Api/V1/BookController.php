@@ -49,9 +49,9 @@ class BookController extends Controller
         $file = $request->file('file');
         
         try {
-            // 1. Dosyayı MinIO'ya (S3) Yükle
+            // 1. Dosyayı local (public) diske yükle (S3 yerine test amaçlı)
             $fileName = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('books/originals', $fileName, 's3');
+            $path = $file->storeAs('books/originals', $fileName, 'public');
             
             // 2. Veritabanına Kaydet
             $book = Book::create([

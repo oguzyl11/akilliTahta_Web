@@ -29,4 +29,12 @@ class BookPage extends Model
     {
         return $this->belongsTo(Book::class);
     }
+
+    /**
+     * Get the hotspots for the page.
+     */
+    public function hotspots()
+    {
+        return $this->hasMany(Hotspot::class);
+    }
 }

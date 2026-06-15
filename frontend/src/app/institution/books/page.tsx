@@ -5,11 +5,12 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { BookOpen, Upload, Search, Filter, MoreVertical, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { BookOpen, Upload, Search, Filter, MoreVertical, Loader2, X, FileUp } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
 import api from '@/services/api';
+import toast from 'react-hot-toast';
 
 interface Book {
   id: string | number;
@@ -23,6 +24,15 @@ interface Book {
 export default function InstitutionBooksPage() {
   const [books, setBooks] = useState<Book[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Upload Modal State
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [uploadTitle, setUploadTitle] = useState('');
+  const [uploadSubject, setUploadSubject] = useState('');
+  const [uploadGrade, setUploadGrade] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -48,6 +58,37 @@ export default function InstitutionBooksPage() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedFile) return toast.error('Lütfen bir PDF dosyası seçin.');
+    if (!uploadTitle) return toast.error('Lütfen kitap adını girin.');
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('title', uploadTitle);
+    if (uploadSubject) formData.append('subject', uploadSubject);
+    if (uploadGrade) formData.append('grade_level', uploadGrade);
+    formData.append('file', selectedFile);
+
+    try {
+      const response = await api.post('/books/upload', formData);
+      
+      if (response.status === 202 || response.data?.status === 'success') {
+        toast.success('Kitap başarıyla yüklendi ve işlemeye alındı!');
+        setIsUploadModalOpen(false);
+        // Reset form
+        setUploadTitle(''); setUploadSubject(''); setUploadGrade(''); setSelectedFile(null);
+        // Refresh list
+        window.location.reload();
+      }
+    } catch (error: any) {
+      console.error('Yükleme hatası:', error?.response?.data || error);
+      toast.error(error?.response?.data?.message || 'Dosya yüklenirken bir hata oluştu. (Dosya boyutu çok büyük olabilir)');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -69,7 +110,14 @@ export default function InstitutionBooksPage() {
           <div className="w-full sm:w-64">
             <Input placeholder="Kitap ara..." leftIcon={<Search size={18} />} />
           </div>
-          <Button leftIcon={<Upload size={18} />} className="bg-indigo-600 hover:bg-indigo-700">Yeni Yükle</Button>
+          <Button variant="outline" leftIcon={<Filter size={18} />}>Filtrele</Button>
+          <Button 
+            leftIcon={<Upload size={18} />} 
+            className="bg-indigo-600 hover:bg-indigo-700"
+            onClick={() => setIsUploadModalOpen(true)}
+          >
+            Yeni PDF Yükle
+          </Button>
         </motion.div>
       </div>
 
@@ -126,6 +174,94 @@ export default function InstitutionBooksPage() {
           </div>
         )}
       </div>
+      <AnimatePresence>
+        {isUploadModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-3xl shadow-xl w-full max-w-lg overflow-hidden"
+            >
+              <div className="bg-indigo-600 p-5 flex justify-between items-center text-white">
+                <h3 className="font-bold text-lg flex items-center gap-2"><BookOpen size={20} /> Yeni PDF Kitap Yükle</h3>
+                <button onClick={() => setIsUploadModalOpen(false)} className="hover:bg-white/20 p-1.5 rounded-lg transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <form onSubmit={handleUpload} className="p-6 space-y-5">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Kitap Adı *</label>
+                    <Input 
+                      placeholder="Örn: 11. Sınıf Fizik Konu Anlatımı" 
+                      value={uploadTitle}
+                      onChange={(e) => setUploadTitle(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Ders Seçimi</label>
+                      <Input 
+                        placeholder="Örn: Fizik" 
+                        value={uploadSubject}
+                        onChange={(e) => setUploadSubject(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Sınıf Seviyesi</label>
+                      <Input 
+                        type="number"
+                        placeholder="Örn: 11" 
+                        value={uploadGrade}
+                        onChange={(e) => setUploadGrade(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* File Upload Area */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">PDF Dosyası *</label>
+                    <div 
+                      className="border-2 border-dashed border-slate-300 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-slate-50 transition-colors cursor-pointer"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        className="hidden" 
+                        accept="application/pdf"
+                        onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                      />
+                      <FileUp size={32} className={selectedFile ? "text-emerald-500 mb-3" : "text-indigo-400 mb-3"} />
+                      {selectedFile ? (
+                        <div>
+                          <p className="font-semibold text-slate-800">{selectedFile.name}</p>
+                          <p className="text-xs text-slate-500 mt-1">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="font-medium text-slate-700">Dosya seçmek için tıklayın</p>
+                          <p className="text-xs text-slate-500 mt-1">Sadece PDF dosyaları, maks. 200MB</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 flex gap-3">
+                  <Button type="button" variant="outline" className="w-full" onClick={() => setIsUploadModalOpen(false)}>İptal</Button>
+                  <Button type="submit" className="w-full bg-indigo-600" disabled={isUploading}>
+                    {isUploading ? <><Loader2 size={18} className="animate-spin mr-2" /> Yükleniyor...</> : 'Yükle ve İşle'}
+                  </Button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
