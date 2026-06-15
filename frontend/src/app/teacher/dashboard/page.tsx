@@ -7,7 +7,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
-import { StatCard, RecentActivityTable } from '@/components/ui';
+import { StatCard, RecentActivityTable, BarChart } from '@/components/ui';
 import { Users, ClipboardList, BookOpen, MessageSquare } from 'lucide-react';
 
 export default function TeacherDashboard() {
@@ -89,21 +89,42 @@ export default function TeacherDashboard() {
 
       {/* Main Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Sınıf Durumu (Placeholder) */}
+        {/* Sınıf Durumu */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          className="lg:col-span-2 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-xl flex items-center justify-center min-h-[400px]"
+          className="lg:col-span-2 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-xl flex flex-col min-h-[400px]"
         >
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
-              <ClipboardList className="text-emerald-400" size={32} />
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
+              <ClipboardList className="text-emerald-400" size={20} />
             </div>
-            <h3 className="text-lg font-medium text-slate-200">Sınıf Başarı Grafikleri</h3>
-            <p className="text-sm text-slate-400 mt-2 max-w-sm mx-auto">
-              Öğrencilerin ödev tamamlama ve test başarı oranları Chart.js ile eklenecektir.
-            </p>
+            <div>
+              <h3 className="text-lg font-medium text-slate-200">Sınıf Başarı Grafikleri</h3>
+              <p className="text-sm text-slate-400">Şubelere göre ödev teslim oranları</p>
+            </div>
+          </div>
+          
+          <div className="flex-1 w-full">
+            <BarChart 
+              height={300}
+              data={{
+                labels: ['11-A', '11-B', '11-C', '12-A', '12-B'],
+                datasets: [
+                  {
+                    label: 'Tamamlanan',
+                    data: [85, 70, 90, 65, 80],
+                    backgroundColor: 'rgba(16, 185, 129, 0.8)', // emerald-500
+                  },
+                  {
+                    label: 'Bekleyen',
+                    data: [15, 30, 10, 35, 20],
+                    backgroundColor: 'rgba(245, 158, 11, 0.8)', // amber-500
+                  }
+                ]
+              }} 
+            />
           </div>
         </motion.div>
 

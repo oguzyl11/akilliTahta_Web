@@ -7,7 +7,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
-import { StatCard, RecentActivityTable } from '@/components/ui';
+import { StatCard, RecentActivityTable, AreaChart } from '@/components/ui';
 import { Server, Building2, BookOpen, Users } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -91,21 +91,46 @@ export default function AdminDashboard() {
 
       {/* Main Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Charts Section (Placeholder) */}
+        {/* Charts Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          className="lg:col-span-2 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-xl flex items-center justify-center min-h-[400px]"
+          className="lg:col-span-2 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-xl flex flex-col min-h-[400px]"
         >
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-rose-500/20 flex items-center justify-center border border-rose-500/30">
-              <Server className="text-rose-400" size={32} />
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-rose-500/20 flex items-center justify-center border border-rose-500/30">
+              <Server className="text-rose-400" size={20} />
             </div>
-            <h3 className="text-lg font-medium text-slate-200">Sistem Yükü ve API Trafiği</h3>
-            <p className="text-sm text-slate-400 mt-2 max-w-sm mx-auto">
-              CPU, RAM kullanımı ve PDF Mikroservis işleme kuyruğu durum grafikleri burada yer alacaktır.
-            </p>
+            <div>
+              <h3 className="text-lg font-medium text-slate-200">Sistem Yükü ve API Trafiği</h3>
+              <p className="text-sm text-slate-400">Son 7 günlük kaynak kullanımı</p>
+            </div>
+          </div>
+          
+          <div className="flex-1 w-full">
+            <AreaChart 
+              height={300}
+              data={{
+                labels: ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'],
+                datasets: [
+                  {
+                    label: 'CPU Kullanımı (%)',
+                    data: [45, 52, 38, 65, 48, 35, 40],
+                    borderColor: '#f43f5e',
+                    backgroundColor: 'rgba(244, 63, 94, 0.1)',
+                    fill: true,
+                  },
+                  {
+                    label: 'Bellek Kullanımı (%)',
+                    data: [60, 62, 58, 75, 65, 55, 58],
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    fill: true,
+                  }
+                ]
+              }} 
+            />
           </div>
         </motion.div>
 

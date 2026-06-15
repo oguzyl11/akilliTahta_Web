@@ -13,3 +13,4 @@ export { Spinner, PageLoader, SkeletonLine, SkeletonCard } from './Spinner';
 export { StatCard } from './StatCard';
 export { RecentActivityTable } from './RecentActivityTable';
 export { DataTable } from './DataTable';
+export { AreaChart, BarChart } from './Chart';

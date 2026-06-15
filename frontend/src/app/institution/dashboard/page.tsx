@@ -7,7 +7,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
-import { StatCard, RecentActivityTable } from '@/components/ui';
+import { StatCard, RecentActivityTable, BarChart } from '@/components/ui';
 import { Users, School, BookOpen, Activity } from 'lucide-react';
 
 export default function InstitutionDashboard() {
@@ -92,21 +92,42 @@ export default function InstitutionDashboard() {
 
       {/* Main Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Charts Section (Placeholder) */}
+        {/* Charts Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          className="lg:col-span-2 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-xl flex items-center justify-center min-h-[400px]"
+          className="lg:col-span-2 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-xl flex flex-col min-h-[400px]"
         >
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
-              <Activity className="text-indigo-400" size={32} />
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
+              <Activity className="text-indigo-400" size={20} />
             </div>
-            <h3 className="text-lg font-medium text-slate-200">Kullanım Grafikleri Çok Yakında</h3>
-            <p className="text-sm text-slate-400 mt-2 max-w-sm mx-auto">
-              Öğrenci başarı oranları ve içerik etkileşim grafikleri Chart.js ile bu alana eklenecektir.
-            </p>
+            <div>
+              <h3 className="text-lg font-medium text-slate-200">Kullanım Grafikleri</h3>
+              <p className="text-sm text-slate-400">Son 6 aydaki sistem aktivitesi ve içerik kullanımı</p>
+            </div>
+          </div>
+          
+          <div className="flex-1 w-full">
+            <BarChart 
+              height={300}
+              data={{
+                labels: ['Eyl', 'Eki', 'Kas', 'Ara', 'Oca', 'Şub'],
+                datasets: [
+                  {
+                    label: 'Aktif Kullanıcılar',
+                    data: [850, 920, 1050, 1100, 1150, 1245],
+                    backgroundColor: 'rgba(99, 102, 241, 0.8)', // indigo-500
+                  },
+                  {
+                    label: 'Okunan İçerik',
+                    data: [420, 500, 580, 610, 680, 750],
+                    backgroundColor: 'rgba(168, 85, 247, 0.8)', // purple-500
+                  }
+                ]
+              }} 
+            />
           </div>
         </motion.div>
 

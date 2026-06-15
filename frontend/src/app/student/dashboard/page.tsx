@@ -7,7 +7,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useAuthStore } from '@/stores/authStore';
-import { StatCard, RecentActivityTable } from '@/components/ui';
+import { StatCard, RecentActivityTable, AreaChart } from '@/components/ui';
 import { BookOpen, Target, Award, Clock } from 'lucide-react';
 
 export default function StudentDashboard() {
@@ -91,21 +91,46 @@ export default function StudentDashboard() {
 
       {/* Main Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* İlerleme (Placeholder) */}
+        {/* İlerleme */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          className="lg:col-span-2 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-xl flex items-center justify-center min-h-[400px]"
+          className="lg:col-span-2 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-xl flex flex-col min-h-[400px]"
         >
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
-              <Target className="text-indigo-400" size={32} />
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
+              <Target className="text-indigo-400" size={20} />
             </div>
-            <h3 className="text-lg font-medium text-slate-200">Öğrenme İlerlemen</h3>
-            <p className="text-sm text-slate-400 mt-2 max-w-sm mx-auto">
-              Derslerindeki başarı yüzdeni ve oyunlaştırma (gamification) ilerlemeni burada görebileceksin.
-            </p>
+            <div>
+              <h3 className="text-lg font-medium text-slate-200">Öğrenme İlerlemen</h3>
+              <p className="text-sm text-slate-400">Son 6 aydaki başarı oranları</p>
+            </div>
+          </div>
+          
+          <div className="flex-1 w-full">
+            <AreaChart 
+              height={300}
+              data={{
+                labels: ['Eyl', 'Eki', 'Kas', 'Ara', 'Oca', 'Şub'],
+                datasets: [
+                  {
+                    label: 'Matematik',
+                    data: [65, 72, 75, 80, 85, 90],
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    fill: true,
+                  },
+                  {
+                    label: 'Fizik',
+                    data: [55, 60, 68, 70, 75, 82],
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    fill: true,
+                  }
+                ]
+              }} 
+            />
           </div>
         </motion.div>
 
