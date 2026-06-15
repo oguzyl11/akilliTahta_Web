@@ -20,15 +20,15 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/25 hover:from-indigo-700 hover:to-purple-700 hover:shadow-indigo-500/40 active:from-indigo-800 active:to-purple-800',
+    'bg-gradient-to-r from-sky-500 to-indigo-500 text-white shadow-md shadow-sky-500/20 hover:from-sky-600 hover:to-indigo-600 hover:shadow-sky-500/30 active:from-sky-700 active:to-indigo-700',
   secondary:
-    'bg-slate-800 text-slate-100 shadow-md hover:bg-slate-700 active:bg-slate-900 border border-slate-700',
+    'bg-white text-slate-700 shadow-sm hover:bg-slate-50 active:bg-slate-100 border border-slate-200',
   outline:
-    'border-2 border-indigo-500/50 text-indigo-400 hover:bg-indigo-500/10 hover:border-indigo-400 active:bg-indigo-500/20',
+    'border-2 border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300 active:bg-indigo-100',
   danger:
-    'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg shadow-red-500/25 hover:from-red-700 hover:to-rose-700 active:from-red-800 active:to-rose-800',
+    'bg-gradient-to-r from-rose-500 to-red-500 text-white shadow-md shadow-rose-500/20 hover:from-rose-600 hover:to-red-600 active:from-rose-700 active:to-red-700',
   ghost:
-    'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 active:bg-slate-800',
+    'text-slate-600 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -58,7 +58,7 @@ export function Button({
     <button
       className={cn(
         'inline-flex items-center justify-center transition-all duration-200 ease-out',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white',
         'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
         'transform active:scale-[0.98]',
         variantStyles[variant],

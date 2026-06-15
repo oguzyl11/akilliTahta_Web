@@ -45,7 +45,7 @@ const commonOptions: ChartOptions<any> = {
     legend: {
       position: 'top' as const,
       labels: {
-        color: '#94a3b8', // text-slate-400
+        color: '#64748b', // text-slate-500
         usePointStyle: true,
         boxWidth: 8,
         padding: 20,
@@ -56,10 +56,10 @@ const commonOptions: ChartOptions<any> = {
       },
     },
     tooltip: {
-      backgroundColor: 'rgba(15, 23, 42, 0.9)', // bg-slate-900
-      titleColor: '#f1f5f9', // text-slate-100
-      bodyColor: '#cbd5e1', // text-slate-300
-      borderColor: 'rgba(99, 102, 241, 0.2)', // border-indigo-500/20
+      backgroundColor: 'rgba(255, 255, 255, 0.95)', // bg-white
+      titleColor: '#1e293b', // text-slate-800
+      bodyColor: '#475569', // text-slate-600
+      borderColor: 'rgba(203, 213, 225, 0.5)', // border-slate-300
       borderWidth: 1,
       padding: 12,
       cornerRadius: 8,
@@ -70,7 +70,7 @@ const commonOptions: ChartOptions<any> = {
   scales: {
     x: {
       grid: {
-        color: 'rgba(51, 65, 85, 0.3)', // border-slate-700/30
+        color: 'rgba(226, 232, 240, 0.8)', // border-slate-200
         display: false,
       },
       ticks: {
@@ -86,7 +86,7 @@ const commonOptions: ChartOptions<any> = {
     },
     y: {
       grid: {
-        color: 'rgba(51, 65, 85, 0.3)', // border-slate-700/30
+        color: 'rgba(226, 232, 240, 0.8)', // border-slate-200
       },
       ticks: {
         color: '#64748b', // text-slate-500
@@ -114,11 +114,11 @@ export function AreaChart({ data, title, className, height = 300 }: BaseChartPro
       title: {
         display: !!title,
         text: title,
-        color: '#e2e8f0', // text-slate-200
+        color: '#1e293b', // text-slate-800
         font: {
           family: "'Inter', sans-serif",
           size: 16,
-          weight: '500' as const,
+          weight: '600' as const,
         },
         padding: { bottom: 20 },
       },
@@ -152,11 +152,11 @@ export function BarChart({ data, title, className, height = 300 }: BaseChartProp
       title: {
         display: !!title,
         text: title,
-        color: '#e2e8f0',
+        color: '#1e293b',
         font: {
           family: "'Inter', sans-serif",
           size: 16,
-          weight: '500' as const,
+          weight: '600' as const,
         },
         padding: { bottom: 20 },
       },

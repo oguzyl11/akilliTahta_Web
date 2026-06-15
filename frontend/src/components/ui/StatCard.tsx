@@ -24,26 +24,26 @@ interface StatCardProps {
 
 const colorStyles = {
   indigo: {
-    bg: 'bg-indigo-500/10',
-    text: 'text-indigo-400',
+    bg: 'bg-indigo-50',
+    text: 'text-indigo-600',
     border: 'stat-card-indigo',
     shadow: 'shadow-indigo-500/10'
   },
   emerald: {
-    bg: 'bg-emerald-500/10',
-    text: 'text-emerald-400',
+    bg: 'bg-emerald-50',
+    text: 'text-emerald-600',
     border: 'stat-card-emerald',
     shadow: 'shadow-emerald-500/10'
   },
   amber: {
-    bg: 'bg-amber-500/10',
-    text: 'text-amber-400',
+    bg: 'bg-amber-50',
+    text: 'text-amber-600',
     border: 'stat-card-amber',
     shadow: 'shadow-amber-500/10'
   },
   rose: {
-    bg: 'bg-rose-500/10',
-    text: 'text-rose-400',
+    bg: 'bg-rose-50',
+    text: 'text-rose-600',
     border: 'stat-card-rose',
     shadow: 'shadow-rose-500/10'
   }
@@ -60,16 +60,16 @@ export function StatCard({ title, value, icon: Icon, trend, color = 'indigo', de
       whileHover={{ y: -5, scale: 1.01 }}
       className={cn(
         'relative overflow-hidden rounded-2xl p-6',
-        'bg-slate-800/80 backdrop-blur-xl border border-slate-700/50',
-        'shadow-xl transition-all duration-300',
+        'bg-white/90 backdrop-blur-xl border border-slate-200',
+        'shadow-md shadow-slate-200/50 transition-all duration-300',
         styles.border,
         `hover:${styles.shadow}`
       )}
     >
       <div className="flex justify-between items-start">
         <div>
-          <p className="text-sm font-medium text-slate-400 mb-1">{title}</p>
-          <h3 className="text-3xl font-bold text-slate-100">{value}</h3>
+          <p className="text-sm font-medium text-slate-500 mb-1">{title}</p>
+          <h3 className="text-3xl font-bold text-slate-800">{value}</h3>
         </div>
         <div className={cn('p-3 rounded-xl', styles.bg)}>
           <Icon size={24} className={styles.text} />
@@ -82,10 +82,10 @@ export function StatCard({ title, value, icon: Icon, trend, color = 'indigo', de
             className={cn(
               'flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md',
               trend.isPositive === true
-                ? 'text-emerald-400 bg-emerald-400/10'
+                ? 'text-emerald-700 bg-emerald-100'
                 : trend.isPositive === false
-                ? 'text-rose-400 bg-rose-400/10'
-                : 'text-slate-400 bg-slate-400/10'
+                ? 'text-rose-700 bg-rose-100'
+                : 'text-slate-600 bg-slate-100'
             )}
           >
             {trend.isPositive === true ? (
@@ -101,8 +101,8 @@ export function StatCard({ title, value, icon: Icon, trend, color = 'indigo', de
         </div>
       )}
 
-      {/* Glow effect in background */}
-      <div className="absolute -bottom-6 -right-6 w-24 h-24 rounded-full blur-2xl opacity-20 pointer-events-none bg-current" style={{ color: `var(--color-${color}-500)` }} />
+      {/* Soft Glow effect in background */}
+      <div className="absolute -bottom-6 -right-6 w-24 h-24 rounded-full blur-2xl opacity-10 pointer-events-none bg-current" style={{ color: `var(--color-${color}-500)` }} />
     </motion.div>
   );
 }

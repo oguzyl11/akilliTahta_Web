@@ -48,12 +48,12 @@ export function Sidebar() {
       className={cn(
         'fixed left-0 top-0 bottom-0 z-40',
         'flex flex-col',
-        'bg-slate-900/95 backdrop-blur-xl border-r border-slate-700/50'
+        'bg-white/80 backdrop-blur-xl border-r border-slate-200'
       )}
     >
       {/* Logo & Tenant */}
-      <div className="flex items-center gap-3 px-4 h-16 border-b border-slate-700/50">
-        <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+      <div className="flex items-center gap-3 px-4 h-16 border-b border-slate-200">
+        <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
           <BookOpen size={18} className="text-white" />
         </div>
         <AnimatePresence mode="wait">
@@ -65,7 +65,7 @@ export function Sidebar() {
               transition={{ duration: 0.2 }}
               className="flex-1 min-w-0"
             >
-              <h1 className="text-sm font-bold text-slate-100 truncate">
+              <h1 className="text-sm font-bold text-slate-800 truncate">
                 {tenant?.name || 'Dijital Eğitim'}
               </h1>
               <p className="text-[10px] text-slate-500 truncate">{roleLabel}</p>
@@ -89,8 +89,8 @@ export function Sidebar() {
                 'transition-all duration-200 group',
                 'text-sm font-medium',
                 isActive
-                  ? 'bg-indigo-500/15 text-indigo-400 shadow-sm shadow-indigo-500/5'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50',
+                  ? 'bg-indigo-50 text-indigo-600 shadow-sm shadow-indigo-500/5'
+                  : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-50',
                 isCollapsed && 'justify-center px-0'
               )}
               title={isCollapsed ? item.label : undefined}
@@ -99,7 +99,7 @@ export function Sidebar() {
                 size={20}
                 className={cn(
                   'flex-shrink-0 transition-colors',
-                  isActive ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'
+                  isActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-indigo-600'
                 )}
               />
               <AnimatePresence>
@@ -117,7 +117,7 @@ export function Sidebar() {
               {isActive && !isCollapsed && (
                 <motion.div
                   layoutId="activeTab"
-                  className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-400"
+                  className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-500"
                 />
               )}
             </Link>
@@ -126,12 +126,12 @@ export function Sidebar() {
       </nav>
 
       {/* User Profile & Collapse Toggle */}
-      <div className="border-t border-slate-700/50 p-3 space-y-2">
+      <div className="border-t border-slate-200 p-3 space-y-2">
         {/* User */}
         <div
           className={cn(
             'flex items-center gap-3 p-2 rounded-xl',
-            'hover:bg-slate-800/50 transition-colors cursor-pointer',
+            'hover:bg-slate-50 transition-colors cursor-pointer',
             isCollapsed && 'justify-center'
           )}
         >
@@ -144,7 +144,7 @@ export function Sidebar() {
                 exit={{ opacity: 0, width: 0 }}
                 className="flex-1 min-w-0 whitespace-nowrap overflow-hidden"
               >
-                <p className="text-sm font-medium text-slate-200 truncate">{user.name}</p>
+                <p className="text-sm font-medium text-slate-800 truncate">{user.name}</p>
                 <p className="text-[10px] text-slate-500 truncate">{user.email}</p>
               </motion.div>
             )}
@@ -156,7 +156,7 @@ export function Sidebar() {
           onClick={() => logout()}
           className={cn(
             'flex items-center gap-3 w-full px-3 py-2 rounded-xl',
-            'text-sm text-slate-500 hover:text-red-400 hover:bg-red-500/10',
+            'text-sm text-slate-500 hover:text-red-600 hover:bg-red-50',
             'transition-all duration-200',
             isCollapsed && 'justify-center px-0'
           )}
@@ -182,7 +182,7 @@ export function Sidebar() {
           onClick={() => setIsCollapsed(!isCollapsed)}
           className={cn(
             'flex items-center justify-center w-full py-2 rounded-xl',
-            'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50',
+            'text-slate-400 hover:text-slate-700 hover:bg-slate-50',
             'transition-all duration-200'
           )}
         >

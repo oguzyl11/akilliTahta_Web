@@ -54,7 +54,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-slate-300 mb-1.5"
+            className="block text-sm font-medium text-slate-700 mb-1.5"
           >
             {label}
           </label>
@@ -70,14 +70,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             type={isPassword && showPassword ? 'text' : type}
             className={cn(
-              'w-full rounded-xl border bg-slate-800/50 text-slate-100 placeholder-slate-500',
-              'backdrop-blur-sm',
+              'w-full rounded-xl border bg-white text-slate-800 placeholder-slate-400',
+              'shadow-sm shadow-black/5',
               'transition-all duration-200 ease-out',
-              'focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500',
-              'hover:border-slate-500',
+              'focus:outline-none focus:ring-2 focus:ring-indigo-400/50 focus:border-indigo-400',
+              'hover:border-slate-300',
               error
-                ? 'border-red-500/50 focus:ring-red-500/50 focus:border-red-500'
-                : 'border-slate-700/50',
+                ? 'border-red-300 focus:ring-red-400/50 focus:border-red-400'
+                : 'border-slate-200',
               leftIcon ? 'pl-10' : '',
               isPassword || rightIcon ? 'pr-10' : '',
               sizeStyles[inputSize],
@@ -89,7 +89,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition-colors"
               tabIndex={-1}
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -102,7 +102,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error && (
-          <p className="mt-1.5 text-xs text-red-400 flex items-center gap-1">
+          <p className="mt-1.5 text-xs text-red-500 flex items-center gap-1">
             <svg className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"

@@ -23,7 +23,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0a0e1a] bg-mesh-gradient">
+    <div className="min-h-screen bg-slate-50 bg-mesh-gradient">
       {/* Sidebar */}
       <Sidebar />
 
