@@ -49,8 +49,8 @@ export default function TeacherDashboard() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-2xl font-bold text-slate-100">Merhaba, {user?.name}</h1>
-          <p className="text-slate-400 mt-1 text-sm">Bugünkü ders programınız ve sınıf durumunuz.</p>
+          <h1 className="text-2xl font-bold text-slate-800">Merhaba, {user?.name}</h1>
+          <p className="text-slate-500 mt-1 text-sm">Bugünkü ders programınız ve sınıf durumunuz.</p>
         </motion.div>
       </div>
 
@@ -94,15 +94,15 @@ export default function TeacherDashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          className="lg:col-span-2 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-xl flex flex-col min-h-[400px]"
+          className="lg:col-span-2 bg-white/90 backdrop-blur-xl border border-slate-200 rounded-2xl p-6 shadow-md shadow-slate-200/50 flex flex-col min-h-[400px]"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
-              <ClipboardList className="text-emerald-400" size={20} />
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
+              <ClipboardList className="text-emerald-500" size={20} />
             </div>
             <div>
-              <h3 className="text-lg font-medium text-slate-200">Sınıf Başarı Grafikleri</h3>
-              <p className="text-sm text-slate-400">Şubelere göre ödev teslim oranları</p>
+              <h3 className="text-lg font-medium text-slate-800">Sınıf Başarı Grafikleri</h3>
+              <p className="text-sm text-slate-500">Şubelere göre ödev teslim oranları</p>
             </div>
           </div>
           

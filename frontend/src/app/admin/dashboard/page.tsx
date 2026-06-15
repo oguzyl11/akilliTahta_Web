@@ -49,8 +49,8 @@ export default function AdminDashboard() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-2xl font-bold text-slate-100">Sistem Yönetimi</h1>
-          <p className="text-slate-400 mt-1 text-sm">Tüm kurumlar ve sistem sağlığı.</p>
+          <h1 className="text-2xl font-bold text-slate-800">Sistem Yönetimi</h1>
+          <p className="text-slate-500 mt-1 text-sm">Tüm kurumlar ve sistem sağlığı.</p>
         </motion.div>
       </div>
 
@@ -96,15 +96,15 @@ export default function AdminDashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          className="lg:col-span-2 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-xl flex flex-col min-h-[400px]"
+          className="lg:col-span-2 bg-white/90 backdrop-blur-xl border border-slate-200 rounded-2xl p-6 shadow-md shadow-slate-200/50 flex flex-col min-h-[400px]"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-rose-500/20 flex items-center justify-center border border-rose-500/30">
-              <Server className="text-rose-400" size={20} />
+            <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center border border-rose-100">
+              <Server className="text-rose-500" size={20} />
             </div>
             <div>
-              <h3 className="text-lg font-medium text-slate-200">Sistem Yükü ve API Trafiği</h3>
-              <p className="text-sm text-slate-400">Son 7 günlük kaynak kullanımı</p>
+              <h3 className="text-lg font-medium text-slate-800">Sistem Yükü ve API Trafiği</h3>
+              <p className="text-sm text-slate-500">Son 7 günlük kaynak kullanımı</p>
             </div>
           </div>
           

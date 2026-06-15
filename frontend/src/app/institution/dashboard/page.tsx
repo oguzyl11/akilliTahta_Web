@@ -49,8 +49,8 @@ export default function InstitutionDashboard() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-2xl font-bold text-slate-100">Hoş Geldiniz, {user?.name}</h1>
-          <p className="text-slate-400 mt-1 text-sm">Kurumunuzun genel durumu ve istatistikleri.</p>
+          <h1 className="text-2xl font-bold text-slate-800">Hoş Geldiniz, {user?.name}</h1>
+          <p className="text-slate-500 mt-1 text-sm">Kurumunuzun genel durumu ve istatistikleri.</p>
         </motion.div>
       </div>
 
@@ -97,15 +97,15 @@ export default function InstitutionDashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5 }}
-          className="lg:col-span-2 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 shadow-xl flex flex-col min-h-[400px]"
+          className="lg:col-span-2 bg-white/90 backdrop-blur-xl border border-slate-200 rounded-2xl p-6 shadow-md shadow-slate-200/50 flex flex-col min-h-[400px]"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
-              <Activity className="text-indigo-400" size={20} />
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100">
+              <Activity className="text-indigo-500" size={20} />
             </div>
             <div>
-              <h3 className="text-lg font-medium text-slate-200">Kullanım Grafikleri</h3>
-              <p className="text-sm text-slate-400">Son 6 aydaki sistem aktivitesi ve içerik kullanımı</p>
+              <h3 className="text-lg font-medium text-slate-800">Kullanım Grafikleri</h3>
+              <p className="text-sm text-slate-500">Son 6 aydaki sistem aktivitesi ve içerik kullanımı</p>
             </div>
           </div>
           
