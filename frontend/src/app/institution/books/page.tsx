@@ -5,17 +5,48 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, Upload, Search, Filter, MoreVertical } from 'lucide-react';
+import { BookOpen, Upload, Search, Filter, MoreVertical, Loader2 } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
+import api from '@/services/api';
+
+interface Book {
+  id: string | number;
+  title: string;
+  subject: string;
+  grade_level: number;
+  pdf_size_bytes: number;
+  render_status: string;
+}
 
 export default function InstitutionBooksPage() {
-  const mockBooks = [
-    { id: '1', title: 'Matematik Soru Bankası', subject: 'Matematik', grade: '11. Sınıf', size: '15 MB', status: 'published', color: 'from-sky-400 to-indigo-500' },
-    { id: '2', title: 'Fizik Konu Anlatımı', subject: 'Fizik', grade: '11. Sınıf', size: '22 MB', status: 'published', color: 'from-emerald-400 to-teal-500' },
-    { id: '3', title: 'Kimya Denemeleri', subject: 'Kimya', grade: '12. Sınıf', size: '8 MB', status: 'draft', color: 'from-amber-400 to-orange-500' },
-  ];
+  const [books, setBooks] = useState<Book[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const response = await api.get('/books');
+        if (response.data?.status === 'success') {
+          setBooks(response.data.data);
+        }
+      } catch (error) {
+        console.error('Kitaplar yüklenemedi:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchBooks();
+  }, []);
+
+  const formatBytes = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
 
   return (
     <div className="space-y-6">
@@ -43,45 +74,57 @@ export default function InstitutionBooksPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {mockBooks.map((book, idx) => (
-          <motion.div 
-            key={book.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.1 }}
-            className="bg-white/90 backdrop-blur-md rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all group"
-          >
-            <div className={`h-40 bg-gradient-to-br ${book.color} relative p-4 flex flex-col justify-between`}>
-              <div className="flex justify-between items-start">
-                <span className="px-2 py-1 bg-white/20 backdrop-blur-sm rounded-lg text-white text-xs font-semibold">
-                  {book.grade}
-                </span>
-                <button className="text-white/70 hover:text-white p-1 rounded hover:bg-white/10 transition-colors">
-                  <MoreVertical size={18} />
-                </button>
+        {isLoading ? (
+          <div className="col-span-full flex justify-center p-12">
+            <Loader2 className="animate-spin text-indigo-500" size={32} />
+          </div>
+        ) : books.length > 0 ? (
+          books.map((book, idx) => (
+            <motion.div 
+              key={book.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1 }}
+              className="bg-white/90 backdrop-blur-md rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all group"
+            >
+              <div className="h-40 bg-gradient-to-br from-indigo-400 to-purple-500 relative p-4 flex flex-col justify-between">
+                <div className="flex justify-between items-start">
+                  <span className="px-2 py-1 bg-white/20 backdrop-blur-sm rounded-lg text-white text-xs font-semibold">
+                    {book.grade_level ? `${book.grade_level}. Sınıf` : 'Genel'}
+                  </span>
+                  <button className="text-white/70 hover:text-white p-1 rounded hover:bg-white/10 transition-colors">
+                    <MoreVertical size={18} />
+                  </button>
+                </div>
+                <div>
+                  <h3 className="text-white font-bold text-lg leading-tight line-clamp-2">{book.title}</h3>
+                  <p className="text-white/80 text-sm mt-1">{book.subject || 'Ders Seçilmedi'}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-white font-bold text-lg leading-tight line-clamp-2">{book.title}</h3>
-                <p className="text-white/80 text-sm mt-1">{book.subject}</p>
-              </div>
-            </div>
 
-            <div className="p-4 flex flex-col justify-between gap-4">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-500">Boyut: {book.size}</span>
-                {book.status === 'published' ? (
-                  <span className="px-2 py-1 rounded-md bg-emerald-50 text-emerald-600 font-medium text-xs">Yayında</span>
-                ) : (
-                  <span className="px-2 py-1 rounded-md bg-amber-50 text-amber-600 font-medium text-xs">Taslak</span>
-                )}
+              <div className="p-4 flex flex-col justify-between gap-4">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-500">Boyut: {formatBytes(book.pdf_size_bytes)}</span>
+                  {book.render_status === 'completed' ? (
+                    <span className="px-2 py-1 rounded-md bg-emerald-50 text-emerald-600 font-medium text-xs">Yayında</span>
+                  ) : book.render_status === 'processing' ? (
+                    <span className="px-2 py-1 rounded-md bg-sky-50 text-sky-600 font-medium text-xs">İşleniyor</span>
+                  ) : (
+                    <span className="px-2 py-1 rounded-md bg-amber-50 text-amber-600 font-medium text-xs">Beklemede</span>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button fullWidth variant="outline" size="sm">Önizle</Button>
+                  <Button fullWidth size="sm">Düzenle</Button>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Button fullWidth variant="outline" size="sm">Önizle</Button>
-                <Button fullWidth size="sm">Düzenle</Button>
-              </div>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          ))
+        ) : (
+          <div className="col-span-full p-12 text-center text-slate-500">
+            Henüz kitap yüklenmemiş.
+          </div>
+        )}
       </div>
     </div>
   );

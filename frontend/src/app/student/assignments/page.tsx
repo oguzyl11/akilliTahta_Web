@@ -1,172 +1,187 @@
 // =============================================================================
-// Student Assignments Page — Öğrenci Ödevleri
-// MOD-04: Ödev listesi, filtreleme ve durum takibi
+// Student Assignments Page — Öğrenci Ödevlerim
+// MOD-04: Öğrencinin bekleyen ve tamamlanan ödevleri
 // =============================================================================
 
 'use client';
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Calendar, Clock, CheckCircle, AlertCircle, FileText, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Calendar, Clock, CheckCircle, FileText, ChevronRight, AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui';
+import api from '@/services/api';
 
-interface Assignment {
-  id: string;
+interface AssignmentTask {
+  id: string | number;
   title: string;
-  subject: string;
-  teacher: string;
-  dueDate: string;
-  status: 'pending' | 'completed' | 'overdue';
-  score?: number;
+  book: { title: string };
+  teacher: { name: string };
+  due_date: string;
+  status: 'active' | 'grading' | 'completed';
 }
 
-const mockAssignments: Assignment[] = [
-  { id: '1', title: 'Türev Uygulamaları Testi', subject: 'Matematik', teacher: 'Ahmet Yılmaz', dueDate: '2026-06-18', status: 'pending' },
-  { id: '2', title: 'Elektrik Devreleri', subject: 'Fizik', teacher: 'Ayşe Demir', dueDate: '2026-06-16', status: 'pending' },
-  { id: '3', title: 'Organik Kimyaya Giriş', subject: 'Kimya', teacher: 'Mehmet Kaya', dueDate: '2026-06-10', status: 'overdue' },
-  { id: '4', title: 'Divan Edebiyatı Özellikleri', subject: 'Edebiyat', teacher: 'Fatma Çelik', dueDate: '2026-06-05', status: 'completed', score: 85 },
-  { id: '5', title: 'İntegral Soru Çözümleri', subject: 'Matematik', teacher: 'Ahmet Yılmaz', dueDate: '2026-06-01', status: 'completed', score: 92 },
-];
-
 export default function StudentAssignmentsPage() {
+  const [assignments, setAssignments] = useState<AssignmentTask[]>([]);
   const [activeTab, setActiveTab] = useState<'pending' | 'completed'>('pending');
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredAssignments = mockAssignments.filter((a) => {
-    if (activeTab === 'pending') return a.status === 'pending' || a.status === 'overdue';
-    return a.status === 'completed';
-  });
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      try {
+        const response = await api.get('/assignments');
+        if (response.data?.status === 'success') {
+          setAssignments(response.data.data);
+        }
+      } catch (error) {
+        console.error('Ödevler yüklenemedi:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchAssignments();
+  }, []);
 
-  const getStatusIcon = (status: Assignment['status']) => {
-    switch (status) {
-      case 'pending': return <Clock className="text-amber-500" size={20} />;
-      case 'overdue': return <AlertCircle className="text-rose-500" size={20} />;
-      case 'completed': return <CheckCircle className="text-emerald-500" size={20} />;
-    }
-  };
+  const pendingAssignments = assignments.filter(a => a.status === 'active' || a.status === 'grading');
+  const completedAssignments = assignments.filter(a => a.status === 'completed');
 
-  const getStatusBadge = (status: Assignment['status']) => {
-    switch (status) {
-      case 'pending': 
-        return <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-600 text-xs font-semibold border border-amber-200">Devam Ediyor</span>;
-      case 'overdue': 
-        return <span className="px-3 py-1 rounded-full bg-rose-50 text-rose-600 text-xs font-semibold border border-rose-200">Gecikti</span>;
-      case 'completed': 
-        return <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-xs font-semibold border border-emerald-200">Tamamlandı</span>;
-    }
+  const displayAssignments = activeTab === 'pending' ? pendingAssignments : completedAssignments;
+
+  const isOverdue = (dateString: string) => {
+    return new Date(dateString) < new Date();
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <h1 className="text-2xl font-bold text-slate-800">Ödevlerim</h1>
-          <p className="text-slate-500 mt-1 text-sm">Bekleyen ve tamamlanmış tüm görevlerini takip et.</p>
-        </motion.div>
-      </div>
+    <div className="space-y-6 max-w-5xl">
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h1 className="text-2xl font-bold text-slate-800">Ödevlerim</h1>
+        <p className="text-slate-500 mt-1 text-sm">Öğretmenlerinin atadığı ödevleri zamanında tamamla.</p>
+      </motion.div>
 
       {/* Tabs */}
-      <motion.div 
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex p-1 bg-slate-200/50 rounded-xl w-full sm:w-fit"
-      >
+      <div className="flex gap-2 p-1 bg-slate-100 rounded-xl w-fit">
         <button
           onClick={() => setActiveTab('pending')}
-          className={`flex-1 sm:px-8 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ${
+          className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
             activeTab === 'pending' 
               ? 'bg-white text-indigo-600 shadow-sm' 
               : 'text-slate-500 hover:text-slate-700'
           }`}
         >
-          Bekleyenler
+          Bekleyenler ({pendingAssignments.length})
         </button>
         <button
           onClick={() => setActiveTab('completed')}
-          className={`flex-1 sm:px-8 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ${
+          className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
             activeTab === 'completed' 
               ? 'bg-white text-emerald-600 shadow-sm' 
               : 'text-slate-500 hover:text-slate-700'
           }`}
         >
-          Tamamlananlar
+          Tamamlananlar ({completedAssignments.length})
         </button>
-      </motion.div>
+      </div>
 
-      {/* List */}
-      <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        {filteredAssignments.length > 0 ? (
-          <div className="divide-y divide-slate-100">
-            {filteredAssignments.map((assignment, index) => (
-              <motion.div 
-                key={assignment.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="p-4 sm:p-6 hover:bg-slate-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
-              >
-                {/* Sol: İkon & Bilgi */}
-                <div className="flex items-start sm:items-center gap-4">
-                  <div className={`p-3 rounded-xl flex-shrink-0 ${
-                    assignment.status === 'completed' ? 'bg-emerald-50' : 
-                    assignment.status === 'overdue' ? 'bg-rose-50' : 'bg-amber-50'
-                  }`}>
-                    {getStatusIcon(assignment.status)}
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-                      {assignment.title}
-                    </h3>
-                    <div className="flex flex-wrap items-center gap-3 mt-1 text-sm text-slate-500">
-                      <span className="flex items-center gap-1">
-                        <FileText size={14} className="text-slate-400" />
-                        {assignment.subject}
-                      </span>
-                      <span className="w-1 h-1 rounded-full bg-slate-300 hidden sm:block" />
-                      <span>{assignment.teacher}</span>
-                      <span className="w-1 h-1 rounded-full bg-slate-300 hidden sm:block" />
-                      <span className={`flex items-center gap-1 ${assignment.status === 'overdue' ? 'text-rose-500 font-medium' : ''}`}>
-                        <Calendar size={14} />
-                        Son Tarih: {new Date(assignment.dueDate).toLocaleDateString('tr-TR')}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Sağ: Durum & Aksiyon */}
-                <div className="flex items-center justify-between sm:justify-end gap-6 sm:w-auto w-full border-t sm:border-0 pt-4 sm:pt-0 mt-2 sm:mt-0 border-slate-100">
-                  <div className="flex items-center gap-4">
-                    {getStatusBadge(assignment.status)}
-                    {assignment.score !== undefined && (
-                      <div className="text-right">
-                        <div className="text-xs text-slate-500">Puan</div>
-                        <div className="text-lg font-bold text-emerald-600">{assignment.score}</div>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <button className="p-2 text-slate-400 group-hover:text-indigo-600 group-hover:bg-indigo-50 rounded-lg transition-colors">
-                    <ChevronRight size={20} />
-                  </button>
-                </div>
-              </motion.div>
-            ))}
+      {/* Assignments List */}
+      <div className="space-y-4">
+        {isLoading ? (
+          <div className="flex justify-center p-12">
+            <Loader2 className="animate-spin text-indigo-500" size={32} />
           </div>
         ) : (
-          <div className="p-12 flex flex-col items-center justify-center text-center">
-            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-              <CheckCircle size={32} className="text-slate-400" />
-            </div>
-            <h3 className="text-lg font-bold text-slate-800 mb-1">Harika İş!</h3>
-            <p className="text-slate-500 max-w-sm">
-              Şu anda listelenecek ödeviniz bulunmuyor.
-            </p>
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-4"
+            >
+              {displayAssignments.length > 0 ? (
+                displayAssignments.map((assignment) => {
+                  const overdue = activeTab === 'pending' && isOverdue(assignment.due_date);
+                  
+                  return (
+                    <div 
+                      key={assignment.id}
+                      className={`bg-white/90 backdrop-blur-md border rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:shadow-md ${
+                        overdue ? 'border-rose-200 shadow-rose-100/50' : 'border-slate-200 shadow-sm'
+                      }`}
+                    >
+                      {/* Sol Bilgi */}
+                      <div className="flex gap-4">
+                        <div className={`mt-1 flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${
+                          activeTab === 'completed' ? 'bg-emerald-50 text-emerald-500' :
+                          overdue ? 'bg-rose-50 text-rose-500' : 'bg-indigo-50 text-indigo-500'
+                        }`}>
+                          {activeTab === 'completed' ? <CheckCircle size={24} /> : overdue ? <AlertCircle size={24} /> : <FileText size={24} />}
+                        </div>
+                        
+                        <div>
+                          <h3 className="font-bold text-slate-800 text-lg">{assignment.title}</h3>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-slate-500">
+                            <span className="flex items-center gap-1.5 font-medium text-slate-600">
+                              <BookOpen size={14} className="text-indigo-400" /> {assignment.book?.title}
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                              Öğretmen: {assignment.teacher?.name}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Sağ Tarih ve Aksiyon */}
+                      <div className="flex items-center gap-4 md:gap-8 border-t border-slate-100 pt-4 md:border-t-0 md:pt-0">
+                        <div className={`flex items-center gap-2 text-sm font-semibold ${
+                          activeTab === 'completed' ? 'text-emerald-600' :
+                          overdue ? 'text-rose-600' : 'text-amber-600'
+                        }`}>
+                          {activeTab === 'completed' ? (
+                            <><CheckCircle size={16} /> Tamamlandı</>
+                          ) : overdue ? (
+                            <><AlertCircle size={16} /> Gecikti</>
+                          ) : (
+                            <><Clock size={16} /> Son Gün: {new Date(assignment.due_date).toLocaleDateString('tr-TR')}</>
+                          )}
+                        </div>
+
+                        {activeTab === 'pending' && (
+                          <Button 
+                            className={overdue ? 'bg-rose-500 hover:bg-rose-600' : 'bg-indigo-600 hover:bg-indigo-700'}
+                          >
+                            Ödeve Git <ChevronRight size={16} className="ml-1" />
+                          </Button>
+                        )}
+                        {activeTab === 'completed' && (
+                          <Button variant="outline">
+                            Sonucu İncele
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="p-12 text-center bg-white/50 backdrop-blur-sm border border-slate-200 border-dashed rounded-2xl">
+                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle size={32} className="text-emerald-500" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-800 mb-1">
+                    {activeTab === 'pending' ? 'Harika İş Çıkardın!' : 'Henüz Ödev Yok'}
+                  </h3>
+                  <p className="text-slate-500">
+                    {activeTab === 'pending' 
+                      ? 'Şu anda bekleyen hiçbir ödevin yok.' 
+                      : 'Henüz tamamladığın bir ödev bulunmuyor.'}
+                  </p>
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
         )}
       </div>
     </div>

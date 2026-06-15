@@ -5,36 +5,47 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Filter, Calendar, Users, FileText, CheckCircle, Clock } from 'lucide-react';
+import { Plus, Search, Calendar, Users, FileText, CheckCircle, Loader2 } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
+import api from '@/services/api';
 
 interface AssignmentTask {
-  id: string;
+  id: string | number;
   title: string;
-  targetClass: string;
-  bookName: string;
-  assignedDate: string;
-  dueDate: string;
-  totalStudents: number;
-  completedStudents: number;
+  classroom: { name: string; students_count: number };
+  book: { title: string };
+  created_at: string;
+  due_date: string;
+  submissions_count: number;
   status: 'active' | 'grading' | 'completed';
 }
 
-const mockAssignments: AssignmentTask[] = [
-  { id: '1', title: 'Türev Problemleri', targetClass: '12-A Sayısal', bookName: 'Matematik Soru Bankası', assignedDate: '2026-06-10', dueDate: '2026-06-15', totalStudents: 26, completedStudents: 24, status: 'grading' },
-  { id: '2', title: 'İntegral Uygulamaları', targetClass: '12-A Sayısal', bookName: 'Matematik Soru Bankası', assignedDate: '2026-06-14', dueDate: '2026-06-20', totalStudents: 26, completedStudents: 10, status: 'active' },
-  { id: '3', title: 'Trigonometri Özeti', targetClass: '11-B Sayısal', bookName: 'Matematik Konu Anlatımı', assignedDate: '2026-06-01', dueDate: '2026-06-05', totalStudents: 22, completedStudents: 22, status: 'completed' },
-  { id: '4', title: 'Logaritma Testi', targetClass: '11-A Sayısal', bookName: 'Matematik Yaprak Test', assignedDate: '2026-06-15', dueDate: '2026-06-22', totalStudents: 24, completedStudents: 0, status: 'active' },
-];
-
 export default function TeacherAssignmentsPage() {
+  const [assignments, setAssignments] = useState<AssignmentTask[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredAssignments = mockAssignments.filter((a) =>
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      try {
+        const response = await api.get('/assignments');
+        if (response.data?.status === 'success') {
+          setAssignments(response.data.data);
+        }
+      } catch (error) {
+        console.error('Ödevler yüklenemedi:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchAssignments();
+  }, []);
+
+  const filteredAssignments = assignments.filter((a) =>
     a.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    a.targetClass.toLowerCase().includes(searchTerm.toLowerCase())
+    (a.classroom?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getStatusBadge = (status: AssignmentTask['status']) => {
@@ -45,6 +56,8 @@ export default function TeacherAssignmentsPage() {
         return <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-600 text-xs font-semibold border border-amber-200">Notlandırılacak</span>;
       case 'completed':
         return <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold border border-slate-200">Tamamlandı</span>;
+      default:
+        return <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold border border-slate-200">{status}</span>;
     }
   };
 
@@ -83,80 +96,90 @@ export default function TeacherAssignmentsPage() {
 
       {/* Assignment List */}
       <div className="bg-white/90 backdrop-blur-md rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        {filteredAssignments.length > 0 ? (
+        {isLoading ? (
+          <div className="flex justify-center items-center p-12">
+            <Loader2 className="animate-spin text-indigo-500" size={32} />
+          </div>
+        ) : filteredAssignments.length > 0 ? (
           <div className="divide-y divide-slate-100">
-            {filteredAssignments.map((assignment, index) => (
-              <motion.div 
-                key={assignment.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                className="p-5 hover:bg-slate-50 transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-6"
-              >
-                {/* Sol Bilgi */}
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-bold text-slate-800">{assignment.title}</h3>
-                    {getStatusBadge(assignment.status)}
-                  </div>
-                  
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
-                    <div className="flex items-center gap-1.5 bg-slate-100 px-2 py-1 rounded-md text-slate-700 font-medium">
-                      <Users size={14} className="text-indigo-500" />
-                      {assignment.targetClass}
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <FileText size={14} />
-                      {assignment.bookName}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-amber-600">
-                      <Calendar size={14} />
-                      Son Tarih: {new Date(assignment.dueDate).toLocaleDateString('tr-TR')}
-                    </div>
-                  </div>
-                </div>
+            {filteredAssignments.map((assignment, index) => {
+              const totalStudents = assignment.classroom?.students_count || 1;
+              const completed = assignment.submissions_count || 0;
+              const ratio = Math.min(completed / totalStudents, 1);
 
-                {/* Sağ İstatistik & Aksiyon */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 lg:border-l lg:border-slate-100 lg:pl-6">
-                  
-                  {/* Progress Ring */}
-                  <div className="flex items-center gap-3">
-                    <div className="relative w-12 h-12 flex items-center justify-center">
-                      <svg className="w-12 h-12 transform -rotate-90">
-                        <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-slate-100" />
-                        <circle 
-                          cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="transparent" 
-                          strokeDasharray={`${2 * Math.PI * 20}`} 
-                          strokeDashoffset={`${2 * Math.PI * 20 * (1 - (assignment.completedStudents / assignment.totalStudents))}`}
-                          className={assignment.completedStudents === assignment.totalStudents ? 'text-emerald-500' : 'text-indigo-500'} 
-                        />
-                      </svg>
-                      <span className="absolute text-xs font-bold text-slate-700">
-                        {Math.round((assignment.completedStudents / assignment.totalStudents) * 100)}%
-                      </span>
+              return (
+                <motion.div 
+                  key={assignment.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  className="p-5 hover:bg-slate-50 transition-colors flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+                >
+                  {/* Sol Bilgi */}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-lg font-bold text-slate-800">{assignment.title}</h3>
+                      {getStatusBadge(assignment.status)}
                     </div>
-                    <div>
-                      <div className="text-xs text-slate-500 font-medium">Teslim Durumu</div>
-                      <div className="text-sm font-bold text-slate-800">
-                        {assignment.completedStudents} <span className="text-slate-400 font-normal">/ {assignment.totalStudents}</span>
+                    
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
+                      <div className="flex items-center gap-1.5 bg-slate-100 px-2 py-1 rounded-md text-slate-700 font-medium">
+                        <Users size={14} className="text-indigo-500" />
+                        {assignment.classroom?.name || 'Sınıf Yok'}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <FileText size={14} />
+                        {assignment.book?.title || 'Kitap Yok'}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-amber-600">
+                        <Calendar size={14} />
+                        Son Tarih: {new Date(assignment.due_date).toLocaleDateString('tr-TR')}
                       </div>
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex gap-2 w-full sm:w-auto">
-                    {assignment.status === 'grading' ? (
-                      <Button className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white" leftIcon={<CheckCircle size={16} />}>
-                        Notlandır
-                      </Button>
-                    ) : (
-                      <Button variant="outline" className="w-full sm:w-auto">Detaylar</Button>
-                    )}
-                  </div>
+                  {/* Sağ İstatistik & Aksiyon */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 lg:border-l lg:border-slate-100 lg:pl-6">
+                    
+                    {/* Progress Ring */}
+                    <div className="flex items-center gap-3">
+                      <div className="relative w-12 h-12 flex items-center justify-center">
+                        <svg className="w-12 h-12 transform -rotate-90">
+                          <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-slate-100" />
+                          <circle 
+                            cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="transparent" 
+                            strokeDasharray={`${2 * Math.PI * 20}`} 
+                            strokeDashoffset={`${2 * Math.PI * 20 * (1 - ratio)}`}
+                            className={completed >= totalStudents ? 'text-emerald-500' : 'text-indigo-500'} 
+                          />
+                        </svg>
+                        <span className="absolute text-xs font-bold text-slate-700">
+                          {Math.round(ratio * 100)}%
+                        </span>
+                      </div>
+                      <div>
+                        <div className="text-xs text-slate-500 font-medium">Teslim Durumu</div>
+                        <div className="text-sm font-bold text-slate-800">
+                          {completed} <span className="text-slate-400 font-normal">/ {totalStudents}</span>
+                        </div>
+                      </div>
+                    </div>
 
-                </div>
-              </motion.div>
-            ))}
+                    {/* Actions */}
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      {assignment.status === 'grading' ? (
+                        <Button className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-white" leftIcon={<CheckCircle size={16} />}>
+                          Notlandır
+                        </Button>
+                      ) : (
+                        <Button variant="outline" className="w-full sm:w-auto">Detaylar</Button>
+                      )}
+                    </div>
+
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         ) : (
           <div className="p-12 flex flex-col items-center justify-center text-center">

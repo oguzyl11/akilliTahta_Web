@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\BookController;
 use App\Http\Controllers\Api\V1\WebhookController;
 use App\Http\Controllers\Api\V1\ClassroomController;
 use App\Http\Controllers\Api\V1\DashboardController;
+use App\Http\Controllers\Api\V1\AssignmentController;
 
 Route::get('/health', function () {
     return response()->json(['status' => 'healthy']);
@@ -33,10 +34,14 @@ Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
     Route::apiResource('users', UserController::class);
 
     // Book Management
+    Route::get('/books', [BookController::class, 'index']);
     Route::post('/books/upload', [BookController::class, 'upload']);
     
     // Classrooms
     Route::apiResource('classrooms', ClassroomController::class)->only(['index', 'store']);
+    
+    // Assignments
+    Route::apiResource('assignments', AssignmentController::class)->only(['index', 'store']);
     
     // Dashboard
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);

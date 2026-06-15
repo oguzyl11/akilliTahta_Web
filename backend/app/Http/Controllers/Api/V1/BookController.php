@@ -12,6 +12,28 @@ use Illuminate\Support\Facades\Log;
 class BookController extends Controller
 {
     /**
+     * Kitapları Listele (Rol Tabanlı)
+     */
+    public function index(Request $request)
+    {
+        $user = $request->user();
+        
+        $query = Book::where('tenant_id', $user->tenant_id);
+
+        // Öğrenci ise sadece yayında/tamamlanmış olanları görsün
+        if ($user->role === 'STUDENT') {
+            $query->where('render_status', 'completed');
+        }
+
+        $books = $query->latest()->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $books
+        ]);
+    }
+
+    /**
      * PDF Yükleme ve Python Pipeline'ı Tetikleme
      */
     public function upload(Request $request)
