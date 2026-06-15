@@ -1,159 +1,155 @@
 // =============================================================================
-// Institution Users Page — Kullanıcı Yönetimi Ana Ekranı
+// Institution Users Page — Kullanıcı Yönetimi
+// MOD-12: Öğrenci ve Öğretmenlerin yönetimi
 // =============================================================================
 
 'use client';
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { DataTable, Column } from '@/components/ui';
-import { Button, Badge, Avatar } from '@/components/ui';
-import { UserPlus, Edit2, Trash2, ShieldAlert } from 'lucide-react';
-import { useUsers, useDeleteUser } from '@/hooks/useUsers';
-import { UserFormModal } from '@/components/features/users/UserFormModal';
-import { ROLE_LABELS } from '@/utils/constants';
-import type { User } from '@/types';
-import toast from 'react-hot-toast';
+import { Search, Plus, UserX, UserCheck, MoreVertical, Shield } from 'lucide-react';
+import { Button, Input } from '@/components/ui';
 
-export default function UsersPage() {
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+interface UserData {
+  id: string;
+  name: string;
+  email: string;
+  role: 'STUDENT' | 'TEACHER';
+  status: 'active' | 'inactive';
+  departmentOrClass: string;
+}
 
-  const { data: response, isLoading, isFetching } = useUsers({
-    page,
-    per_page: 10,
-    search: search.length >= 3 ? search : undefined, // En az 3 harf girilince ara
+const mockUsers: UserData[] = [
+  { id: '1', name: 'Ahmet Yılmaz', email: 'ahmet@demo.com', role: 'TEACHER', status: 'active', departmentOrClass: 'Matematik' },
+  { id: '2', name: 'Zeynep Kaya', email: 'zeynep@demo.com', role: 'STUDENT', status: 'active', departmentOrClass: '11-A' },
+  { id: '3', name: 'Mehmet Demir', email: 'mehmet@demo.com', role: 'STUDENT', status: 'active', departmentOrClass: '12-B' },
+  { id: '4', name: 'Ayşe Çelik', email: 'ayse@demo.com', role: 'TEACHER', status: 'inactive', departmentOrClass: 'Fizik' },
+];
+
+export default function InstitutionUsersPage() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterRole, setFilterRole] = useState<'ALL' | 'STUDENT' | 'TEACHER'>('ALL');
+
+  const filteredUsers = mockUsers.filter(user => {
+    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = filterRole === 'ALL' || user.role === filterRole;
+    return matchesSearch && matchesRole;
   });
 
-  const deleteUserMutation = useDeleteUser();
-
-  const handleEdit = (user: User) => {
-    setSelectedUser(user);
-    setIsModalOpen(true);
-  };
-
-  const handleCreate = () => {
-    setSelectedUser(null);
-    setIsModalOpen(true);
-  };
-
-  const handleDelete = (user: User) => {
-    if (window.confirm(`${user.name} isimli kullanıcıyı silmek istediğinize emin misiniz?`)) {
-      deleteUserMutation.mutate(user.id);
-    }
-  };
-
-  const columns: Column<User>[] = [
-    {
-      header: 'Kullanıcı',
-      cell: (user) => (
-        <div className="flex items-center gap-3">
-          <Avatar name={user.name} src={user.avatarUrl} size="sm" />
-          <div>
-            <p className="font-medium text-slate-200">{user.name}</p>
-            <p className="text-[10px] text-slate-500">{user.email}</p>
-          </div>
-        </div>
-      ),
-    },
-    {
-      header: 'Rol',
-      cell: (user) => {
-        const isStaff = user.role === 'INSTITUTION_ADMIN' || user.role === 'SUPER_ADMIN';
-        return (
-          <Badge variant={isStaff ? 'primary' : user.role === 'TEACHER' ? 'info' : 'default'}>
-            {ROLE_LABELS[user.role] || user.role}
-          </Badge>
-        );
-      },
-    },
-    {
-      header: 'Durum',
-      cell: () => <Badge variant="success">Aktif</Badge>,
-    },
-    {
-      header: 'İşlemler',
-      className: 'text-right',
-      cell: (user) => (
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={() => handleEdit(user)}
-            className="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-indigo-400/10 rounded-lg transition-colors"
-            title="Düzenle"
-          >
-            <Edit2 size={16} />
-          </button>
-          <button
-            onClick={() => handleDelete(user)}
-            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-400/10 rounded-lg transition-colors"
-            title="Sil"
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
-      ),
-    },
-  ];
-
   return (
-    <div className="space-y-6 h-full flex flex-col">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">
-            <ShieldAlert className="text-indigo-500" />
-            Kullanıcı Yönetimi
-          </h1>
-          <p className="text-slate-400 mt-1 text-sm">Kurumunuzdaki öğrenci, öğretmen ve yöneticileri yönetin.</p>
+          <h1 className="text-2xl font-bold text-slate-800">Kullanıcı Yönetimi</h1>
+          <p className="text-slate-500 mt-1 text-sm">Kurumunuza ait öğretmen ve öğrencileri yönetin.</p>
         </motion.div>
 
-        <motion.div
+        <motion.div 
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
+          className="flex flex-col sm:flex-row gap-3"
         >
-          <Button onClick={handleCreate} className="gap-2">
-            <UserPlus size={18} />
-            Yeni Kullanıcı
+          <Button className="bg-indigo-600 hover:bg-indigo-700" leftIcon={<Plus size={18} />}>
+            Yeni Kullanıcı Ekle
           </Button>
         </motion.div>
       </div>
 
-      {/* Main Table Area */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="flex-1"
-      >
-        <DataTable
-          columns={columns}
-          data={response?.data || []}
-          meta={response?.meta}
-          isLoading={isLoading || isFetching}
-          searchValue={search}
-          onSearch={(val) => {
-            setSearch(val);
-            setPage(1); // arama değişince ilk sayfaya dön
-          }}
-          onPageChange={setPage}
-          keyExtractor={(user) => user.id}
-          emptyMessage="Kriterlere uygun kullanıcı bulunamadı."
-        />
-      </motion.div>
+      {/* Filters */}
+      <div className="bg-white/90 backdrop-blur-md rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="w-full md:w-96">
+          <Input 
+            placeholder="İsim veya e-posta ara..." 
+            leftIcon={<Search size={18} />}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div className="flex bg-slate-100 p-1 rounded-xl w-full md:w-auto">
+          {['ALL', 'TEACHER', 'STUDENT'].map(role => (
+            <button
+              key={role}
+              onClick={() => setFilterRole(role as any)}
+              className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                filterRole === role ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              {role === 'ALL' ? 'Tümü' : role === 'TEACHER' ? 'Öğretmenler' : 'Öğrenciler'}
+            </button>
+          ))}
+        </div>
+      </div>
 
-      {/* Modal */}
-      <UserFormModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        user={selectedUser}
-      />
+      {/* Data Table */}
+      <div className="bg-white/90 backdrop-blur-md rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-slate-600">
+            <thead className="bg-slate-50/50 border-b border-slate-200 text-slate-500 font-medium">
+              <tr>
+                <th className="px-6 py-4">Kullanıcı</th>
+                <th className="px-6 py-4">Rol</th>
+                <th className="px-6 py-4">Sınıf/Branş</th>
+                <th className="px-6 py-4">Durum</th>
+                <th className="px-6 py-4 text-right">İşlem</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredUsers.map((user, idx) => (
+                <motion.tr 
+                  key={user.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="hover:bg-slate-50/50 transition-colors"
+                >
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${
+                        user.role === 'TEACHER' ? 'bg-emerald-500' : 'bg-indigo-500'
+                      }`}>
+                        {user.name.charAt(0)}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-slate-800">{user.name}</div>
+                        <div className="text-xs text-slate-400">{user.email}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`flex items-center gap-1.5 font-medium ${user.role === 'TEACHER' ? 'text-emerald-600' : 'text-indigo-600'}`}>
+                      <Shield size={14} />
+                      {user.role === 'TEACHER' ? 'Öğretmen' : 'Öğrenci'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 font-medium text-slate-700">{user.departmentOrClass}</td>
+                  <td className="px-6 py-4">
+                    {user.status === 'active' ? (
+                      <span className="flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md text-xs font-semibold w-fit">
+                        <UserCheck size={14} /> Aktif
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 text-rose-600 bg-rose-50 px-2 py-1 rounded-md text-xs font-semibold w-fit">
+                        <UserX size={14} /> Pasif
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <button className="text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-lg hover:bg-slate-100">
+                      <MoreVertical size={18} />
+                    </button>
+                  </td>
+                </motion.tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
