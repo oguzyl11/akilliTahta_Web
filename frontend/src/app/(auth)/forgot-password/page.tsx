@@ -40,31 +40,35 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-12">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center px-6 py-12 bg-slate-50 relative overflow-hidden">
+      {/* Background elements */}
+      <div className="absolute inset-0 bg-mesh-gradient opacity-50" />
+      <div className="absolute inset-0 bg-dot-pattern opacity-40" />
+
+      <div className="w-full max-w-md relative z-10">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8 justify-center">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center shadow-lg shadow-sky-500/25 animate-pulse-glow">
             <BookOpen size={22} className="text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-white">Dijital Eğitim</h1>
-            <p className="text-[10px] text-indigo-300/70">Platformu</p>
+            <h1 className="text-lg font-bold text-slate-800">Dijital Eğitim</h1>
+            <p className="text-[10px] text-slate-500">Platformu</p>
           </div>
         </div>
 
         {/* Card */}
-        <div className="glass rounded-3xl p-8 shadow-2xl shadow-black/20 animate-slide-up">
+        <div className="glass rounded-3xl p-8 shadow-2xl shadow-indigo-500/5 animate-slide-up bg-white/80">
           {isSent ? (
             /* Success State */
             <div className="text-center py-4">
-              <div className="w-16 h-16 rounded-full bg-emerald-500/15 flex items-center justify-center mx-auto mb-4">
-                <CheckCircle size={32} className="text-emerald-400" />
+              <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4 border border-emerald-100">
+                <CheckCircle size={32} className="text-emerald-500" />
               </div>
-              <h2 className="text-xl font-bold text-white mb-2">E-posta Gönderildi</h2>
-              <p className="text-sm text-slate-400 mb-6">
-                <strong className="text-slate-300">{email}</strong> adresine şifre sıfırlama 
-                bağlantısı gönderdik. Bağlantı <strong className="text-indigo-400">60 dakika</strong> geçerlidir.
+              <h2 className="text-xl font-bold text-slate-800 mb-2">E-posta Gönderildi</h2>
+              <p className="text-sm text-slate-600 mb-6">
+                <strong className="text-slate-800">{email}</strong> adresine şifre sıfırlama 
+                bağlantısı gönderdik. Bağlantı <strong className="text-indigo-600">60 dakika</strong> geçerlidir.
               </p>
               <Link href="/login">
                 <Button variant="outline" leftIcon={<ArrowLeft size={16} />}>
@@ -76,8 +80,8 @@ export default function ForgotPasswordPage() {
             /* Form State */
             <>
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-white mb-2">Şifremi Unuttum</h2>
-                <p className="text-sm text-slate-400">
+                <h2 className="text-2xl font-bold text-slate-800 mb-2">Şifremi Unuttum</h2>
+                <p className="text-sm text-slate-500">
                   E-posta adresinizi girin, şifre sıfırlama bağlantısı göndereceğiz.
                 </p>
               </div>
@@ -110,7 +114,7 @@ export default function ForgotPasswordPage() {
               <div className="mt-6 text-center">
                 <Link
                   href="/login"
-                  className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-indigo-400 transition-colors"
+                  className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-indigo-600 font-medium transition-colors"
                 >
                   <ArrowLeft size={14} />
                   Giriş sayfasına dön
