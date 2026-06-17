@@ -37,7 +37,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: dep-backend
-    command: php -d upload_max_filesize=256M -d post_max_size=256M artisan serve --host=0.0.0.0 --port=8000
+    command: sh -c "echo 'upload_max_filesize=256M' > /usr/local/etc/php/conf.d/uploads.ini && echo 'post_max_size=256M' >> /usr/local/etc/php/conf.d/uploads.ini && php artisan serve --host=0.0.0.0 --port=8000"
     ports:
       - "8000:8000"
     volumes:
