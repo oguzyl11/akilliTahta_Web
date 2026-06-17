@@ -86,9 +86,14 @@ class BookController extends Controller
                 'created_by' => $user->id,
             ]);
 
-            // PDF servisi devre dışı olduğu için editörün çalışabilmesi adına örnek 3 sayfa oluşturalım
-            for ($i = 1; $i <= 3; $i++) {
-                $svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 1131'><rect width='800' height='1131' fill='%23e2e8f0'/><text x='400' y='565' font-size='60' fill='%23475569' text-anchor='middle'>Sayfa {$i}</text></svg>";
+            // PDF dosyasını parse edip gerçek sayfa sayısını bulalım
+            $parser = new \Smalot\PdfParser\Parser();
+            $pdf = $parser->parseFile($file->getPathname());
+            $pageCount = count($pdf->getPages());
+
+            // Bulunan sayfa sayısı kadar veritabanına sayfa kaydı oluşturalım
+            for ($i = 1; $i <= $pageCount; $i++) {
+                $svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 1131'><rect width='800' height='1131' fill='%23e2e8f0'/><text x='400' y='565' font-size='60' fill='%23475569' text-anchor='middle'>Sayfa {$i} Yükleniyor...</text></svg>";
                 
                 \App\Models\BookPage::create([
                     'book_id' => $book->id,
@@ -99,6 +104,9 @@ class BookController extends Controller
                     'text_coords' => [],
                 ]);
             }
+
+            // Kitabın sayfa sayısını güncelle
+            $book->update(['page_count' => $pageCount]);
 
             Log::info('Book uploaded successfully', ['book_id' => $book->id, 'path' => $path]);
 

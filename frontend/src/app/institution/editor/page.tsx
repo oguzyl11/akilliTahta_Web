@@ -36,6 +36,7 @@ interface Hotspot {
   y: number; // Yüzde olarak
   width: number; // Yüzde olarak
   height: number; // Yüzde olarak
+  payload?: any;
 }
 
 interface BookPage {
@@ -66,6 +67,10 @@ export default function InstitutionEditorPage() {
   // Modal state'i
   const [showModal, setShowModal] = useState(false);
   const [hotspotType, setHotspotType] = useState<'video' | 'question' | 'link'>('video');
+  const [hotspotPayload, setHotspotPayload] = useState<any>({});
+
+  // Görüntüleme state'i
+  const [viewingHotspot, setViewingHotspot] = useState<Hotspot | null>(null);
 
   useEffect(() => {
     // Veritabanındaki kitabı çekiyoruz
@@ -158,7 +163,8 @@ export default function InstitutionEditorPage() {
         x: currentBox.x,
         y: currentBox.y,
         width: currentBox.w,
-        height: currentBox.h
+        height: currentBox.h,
+        payload: hotspotPayload
       };
 
       const response = await api.post(`/editor/pages/${activePage.id}/hotspots`, payload);
@@ -258,7 +264,8 @@ export default function InstitutionEditorPage() {
               {activePage.hotspots.map((hs) => (
                 <div
                   key={hs.id}
-                  className={`absolute border-2 flex items-center justify-center bg-white/20 backdrop-blur-[2px] transition-all hover:bg-white/40 ${
+                  onClick={(e) => { e.stopPropagation(); setViewingHotspot(hs); }}
+                  className={`absolute border-2 flex items-center justify-center cursor-pointer bg-white/20 backdrop-blur-[2px] transition-all hover:bg-white/40 ${
                     hs.type === 'video' ? 'border-rose-500 text-rose-600' :
                     hs.type === 'question' ? 'border-indigo-500 text-indigo-600' :
                     'border-emerald-500 text-emerald-600'
@@ -319,21 +326,21 @@ export default function InstitutionEditorPage() {
                 
                 <div className="grid grid-cols-3 gap-3">
                   <button 
-                    onClick={() => setHotspotType('video')}
+                    onClick={() => { setHotspotType('video'); setHotspotPayload({}); }}
                     className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${hotspotType === 'video' ? 'border-rose-500 bg-rose-50 text-rose-600' : 'border-slate-100 text-slate-500 hover:border-slate-300'}`}
                   >
                     <PlayCircle size={28} className="mb-2" />
                     <span className="text-xs font-bold">Video</span>
                   </button>
                   <button 
-                    onClick={() => setHotspotType('question')}
+                    onClick={() => { setHotspotType('question'); setHotspotPayload({}); }}
                     className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${hotspotType === 'question' ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-slate-100 text-slate-500 hover:border-slate-300'}`}
                   >
                     <HelpCircle size={28} className="mb-2" />
                     <span className="text-xs font-bold">Soru</span>
                   </button>
                   <button 
-                    onClick={() => setHotspotType('link')}
+                    onClick={() => { setHotspotType('link'); setHotspotPayload({}); }}
                     className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${hotspotType === 'link' ? 'border-emerald-500 bg-emerald-50 text-emerald-600' : 'border-slate-100 text-slate-500 hover:border-slate-300'}`}
                   >
                     <LinkIcon size={28} className="mb-2" />
@@ -341,9 +348,130 @@ export default function InstitutionEditorPage() {
                   </button>
                 </div>
 
+                {hotspotType === 'video' && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-700">Video URL (YouTube vb.)</label>
+                    <input 
+                      type="url" 
+                      className="w-full p-3 border rounded-xl" 
+                      placeholder="https://..."
+                      value={hotspotPayload.url || ''}
+                      onChange={e => setHotspotPayload({...hotspotPayload, url: e.target.value})}
+                    />
+                  </div>
+                )}
+
+                {hotspotType === 'link' && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-700">Hedef URL</label>
+                    <input 
+                      type="url" 
+                      className="w-full p-3 border rounded-xl" 
+                      placeholder="https://..."
+                      value={hotspotPayload.url || ''}
+                      onChange={e => setHotspotPayload({...hotspotPayload, url: e.target.value})}
+                    />
+                  </div>
+                )}
+
+                {hotspotType === 'question' && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-slate-700">Doğru Cevap</label>
+                      <div className="flex gap-2">
+                        {['A', 'B', 'C', 'D', 'E'].map(opt => (
+                          <button
+                            key={opt}
+                            onClick={() => setHotspotPayload({...hotspotPayload, answer: opt})}
+                            className={`w-10 h-10 rounded-full font-bold transition-all ${hotspotPayload.answer === opt ? 'bg-indigo-500 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-slate-700">Çözüm / Açıklama (Opsiyonel)</label>
+                      <textarea 
+                        className="w-full p-3 border rounded-xl" 
+                        rows={3}
+                        placeholder="Öğrenci soruyu yanlış yaparsa bu açıklama gösterilebilir..."
+                        value={hotspotPayload.solution || ''}
+                        onChange={e => setHotspotPayload({...hotspotPayload, solution: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <Button fullWidth onClick={saveHotspot} leftIcon={<Save size={18} />}>
                   Kaydet
                 </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Hotspot Görüntüleme Modalı */}
+      <AnimatePresence>
+        {viewingHotspot && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setViewingHotspot(null)}>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden"
+            >
+              <div className={`p-4 text-white flex justify-between items-center ${
+                viewingHotspot.type === 'video' ? 'bg-rose-500' :
+                viewingHotspot.type === 'question' ? 'bg-indigo-500' : 'bg-emerald-500'
+              }`}>
+                <h3 className="font-bold text-lg flex items-center gap-2">
+                  {viewingHotspot.type === 'video' && <PlayCircle size={20} />}
+                  {viewingHotspot.type === 'question' && <HelpCircle size={20} />}
+                  {viewingHotspot.type === 'link' && <LinkIcon size={20} />}
+                  Hotspot Detayı
+                </h3>
+                <button onClick={() => setViewingHotspot(null)} className="hover:bg-white/20 p-1 rounded-lg transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                {viewingHotspot.type === 'video' && (
+                  <div>
+                    <p className="text-sm font-semibold text-slate-500 mb-1">Video URL</p>
+                    <a href={viewingHotspot.payload?.url} target="_blank" rel="noreferrer" className="text-rose-600 font-medium break-all hover:underline">
+                      {viewingHotspot.payload?.url || 'URL belirtilmemiş'}
+                    </a>
+                  </div>
+                )}
+                {viewingHotspot.type === 'link' && (
+                  <div>
+                    <p className="text-sm font-semibold text-slate-500 mb-1">Bağlantı</p>
+                    <a href={viewingHotspot.payload?.url} target="_blank" rel="noreferrer" className="text-emerald-600 font-medium break-all hover:underline">
+                      {viewingHotspot.payload?.url || 'URL belirtilmemiş'}
+                    </a>
+                  </div>
+                )}
+                {viewingHotspot.type === 'question' && (
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-500 mb-1">Doğru Cevap</p>
+                      <div className="inline-flex w-12 h-12 bg-indigo-100 text-indigo-700 rounded-full items-center justify-center font-bold text-xl">
+                        {viewingHotspot.payload?.answer || '?'}
+                      </div>
+                    </div>
+                    {viewingHotspot.payload?.solution && (
+                      <div>
+                        <p className="text-sm font-semibold text-slate-500 mb-1">Çözüm Açıklaması</p>
+                        <div className="bg-slate-50 p-4 rounded-xl text-slate-700 text-sm border border-slate-100">
+                          {viewingHotspot.payload.solution}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>
