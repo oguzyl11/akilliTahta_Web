@@ -61,32 +61,34 @@ export default function InstitutionBooksPage() {
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile) return toast.error('Lütfen bir PDF dosyası seçin.');
-    if (!uploadTitle) return toast.error('Lütfen kitap adını girin.');
+    if (!uploadTitle.trim()) return toast.error('Lütfen kitap adını girin.');
 
     setIsUploading(true);
     const formData = new FormData();
-    formData.append('title', uploadTitle);
-    if (uploadSubject) formData.append('subject', uploadSubject);
-    if (uploadGrade) formData.append('grade_level', uploadGrade);
+    formData.append('title', uploadTitle.trim());
+    if (uploadSubject.trim()) formData.append('subject', uploadSubject.trim());
+    if (uploadGrade.trim()) formData.append('grade_level', uploadGrade.trim());
     formData.append('file', selectedFile);
 
     try {
-      const response = await api.post('/books/upload', formData);
+      const response = await api.post('/books/upload', formData, {
+        timeout: 120000, // 2 dakika — büyük dosyalar için
+      });
       
-      if (response.status === 202 || response.data?.status === 'success') {
-        toast.success('Kitap başarıyla yüklendi ve işlemeye alındı!');
-        setIsUploadModalOpen(false);
-        // Reset form
-        setUploadTitle(''); setUploadSubject(''); setUploadGrade(''); setSelectedFile(null);
-        // Refresh list
-        window.location.reload();
+      toast.success('Kitap başarıyla yüklendi!');
+      setIsUploadModalOpen(false);
+      setUploadTitle(''); setUploadSubject(''); setUploadGrade(''); setSelectedFile(null);
+      // Listeyi yenile
+      const booksRes = await api.get('/books');
+      if (booksRes.data?.status === 'success') {
+        setBooks(booksRes.data.data);
       }
     } catch (error: any) {
-      console.error('Yükleme hatası:', error);
-      const msg = error?.message || error?.response?.data?.message || 'Dosya yüklenirken bir hata oluştu.';
+      console.error('Yükleme hatası (detay):', JSON.stringify(error, null, 2));
+      // api.ts interceptor'ından gelen yapı: { message, errors, statusCode, response }
+      const msg = error?.message || 'Dosya yüklenirken bir hata oluştu.';
       const validationErrors = error?.errors;
-      if (validationErrors) {
-        // Laravel validation hatalarını göster
+      if (validationErrors && typeof validationErrors === 'object') {
         const firstError = Object.values(validationErrors).flat()[0] as string;
         toast.error(firstError || msg);
       } else {
