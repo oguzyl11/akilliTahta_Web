@@ -208,12 +208,8 @@ export default function InstitutionEditorPage() {
             }`}
           >
             <div className="relative pt-[141%] bg-slate-200 flex items-center justify-center overflow-hidden">
-              {pdfUrl ? (
-                <div className="absolute inset-0 origin-top flex items-start justify-center scale-[0.3]">
-                  <Document file={pdfUrl}>
-                    <PDFPage pageNumber={page.page_number} width={800} renderTextLayer={false} renderAnnotationLayer={false} />
-                  </Document>
-                </div>
+              {page.image_url ? (
+                <img src={page.image_url} alt={`Sayfa ${page.page_number}`} className="absolute inset-0 w-full h-full object-cover" />
               ) : (
                 <ImageIcon className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-400" />
               )}
