@@ -7,6 +7,7 @@ use App\Models\Book;
 use App\Models\BookPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class BookController extends Controller
@@ -115,5 +116,39 @@ class BookController extends Controller
                 'message' => 'Dosya yüklenirken bir sunucu hatası oluştu: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * PDF dosyasını CORS uyumlu olarak sun.
+     * php artisan serve statik dosyalar için middleware çalıştırmadığından
+     * bu endpoint üzerinden PDF sunuyoruz.
+     */
+    public function servePdf(Request $request, $bookId)
+    {
+        $user = $request->user();
+
+        $query = Book::where('tenant_id', $user->tenant_id);
+
+        if ($bookId === 'latest') {
+            $book = $query->latest()->first();
+        } else {
+            $book = $query->where('id', $bookId)->first();
+        }
+
+        if (!$book || !$book->pdf_url) {
+            return response()->json(['message' => 'PDF bulunamadı.'], 404);
+        }
+
+        $disk = Storage::disk('public');
+
+        if (!$disk->exists($book->pdf_url)) {
+            return response()->json(['message' => 'PDF dosyası sunucuda bulunamadı.'], 404);
+        }
+
+        return response($disk->get($book->pdf_url), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . basename($book->pdf_url) . '"',
+            'Cache-Control' => 'public, max-age=3600',
+        ]);
     }
 }

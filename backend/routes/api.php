@@ -50,4 +50,7 @@ Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
     
     // Dashboard
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+    
+    // Book PDF dosyasını CORS uyumlu sunma
+    Route::get('/books/{book_id}/pdf', [BookController::class, 'servePdf']);
 });

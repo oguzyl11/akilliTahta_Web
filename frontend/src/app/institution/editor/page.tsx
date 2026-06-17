@@ -55,6 +55,7 @@ export default function InstitutionEditorPage() {
   const [activePage, setActivePage] = useState<BookPage | null>(null);
   const [bookData, setBookData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
 
   // Çizim state'leri
   const [isDrawing, setIsDrawing] = useState(false);
@@ -77,6 +78,21 @@ export default function InstitutionEditorPage() {
           if (response.data.data.pages.length > 0) {
             setActivePage(response.data.data.pages[0]);
           }
+
+          // PDF'i authenticated API üzerinden blob olarak çek
+          const bookInfo = response.data.data.book;
+          if (bookInfo?.id) {
+            try {
+              const pdfResponse = await api.get(`/books/${bookInfo.id}/pdf`, {
+                responseType: 'blob'
+              });
+              const blobUrl = URL.createObjectURL(pdfResponse.data);
+              setPdfBlobUrl(blobUrl);
+            } catch (pdfError) {
+              console.error('PDF yüklenemedi:', pdfError);
+              toast.error('PDF dosyası yüklenemedi.');
+            }
+          }
         }
       } catch (error) {
         console.error('Editör verileri yüklenemedi:', error);
@@ -86,6 +102,13 @@ export default function InstitutionEditorPage() {
       }
     };
     fetchEditorData();
+
+    // Cleanup: blob URL'i serbest bırak
+    return () => {
+      if (pdfBlobUrl) {
+        URL.revokeObjectURL(pdfBlobUrl);
+      }
+    };
   }, [bookId]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -163,7 +186,7 @@ export default function InstitutionEditorPage() {
     );
   }
 
-  const pdfUrl = bookData ? `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'}/storage/${bookData.pdf_url}` : null;
+  const pdfUrl = pdfBlobUrl;
 
   return (
     <div className="flex h-[calc(100vh-120px)] -mx-4 -mt-2">
