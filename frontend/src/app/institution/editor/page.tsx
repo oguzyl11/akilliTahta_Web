@@ -11,6 +11,11 @@ import { PlayCircle, HelpCircle, Link as LinkIcon, Save, X, Loader2, ChevronLeft
 import { Button } from '@/components/ui';
 import api from '@/services/api';
 import toast from 'react-hot-toast';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 interface Hotspot {
   id: string | number;
@@ -36,6 +41,7 @@ export default function InstitutionEditorPage() {
 
   const [pages, setPages] = useState<BookPage[]>([]);
   const [activePage, setActivePage] = useState<BookPage | null>(null);
+  const [bookData, setBookData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Çizim state'leri
@@ -54,9 +60,11 @@ export default function InstitutionEditorPage() {
       try {
         const response = await api.get(`/editor/books/${bookId}/pages`);
         if (response.data?.status === 'success') {
-          const fetchedPages = response.data.data.pages;
-          setPages(fetchedPages);
-          if (fetchedPages.length > 0) setActivePage(fetchedPages[0]);
+          setPages(response.data.data.pages);
+          setBookData(response.data.data.book);
+          if (response.data.data.pages.length > 0) {
+            setActivePage(response.data.data.pages[0]);
+          }
         }
       } catch (error) {
         console.error('Editör verileri yüklenemedi:', error);
@@ -143,6 +151,8 @@ export default function InstitutionEditorPage() {
     );
   }
 
+  const pdfUrl = bookData ? `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000'}/storage/${bookData.pdf_url}` : null;
+
   return (
     <div className="flex h-[calc(100vh-120px)] -mx-4 -mt-2">
       {/* Sol Panel: Thumbnails */}
@@ -156,9 +166,17 @@ export default function InstitutionEditorPage() {
               activePage?.id === page.id ? 'border-indigo-500 shadow-md scale-105' : 'border-transparent hover:border-slate-300'
             }`}
           >
-            <div className="relative pt-[141%] bg-slate-200">
-              <img src={page.image_url} alt={`Sayfa ${page.page_number}`} className="absolute inset-0 w-full h-full object-cover" />
-              <div className="absolute bottom-0 inset-x-0 bg-black/50 text-white text-[10px] text-center py-1">
+            <div className="relative pt-[141%] bg-slate-200 flex items-center justify-center overflow-hidden">
+              {pdfUrl ? (
+                <div className="absolute inset-0 origin-top flex items-start justify-center scale-[0.3]">
+                  <Document file={pdfUrl}>
+                    <Page pageNumber={page.page_number} width={800} renderTextLayer={false} renderAnnotationLayer={false} />
+                  </Document>
+                </div>
+              ) : (
+                <ImageIcon className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-400" />
+              )}
+              <div className="absolute bottom-0 inset-x-0 bg-black/50 text-white text-[10px] text-center py-1 z-10">
                 Sayfa {page.page_number}
               </div>
             </div>
@@ -183,12 +201,23 @@ export default function InstitutionEditorPage() {
               onMouseUp={handleMouseUp}
               onMouseLeave={handleMouseUp}
             >
-              <img 
+              <div 
                 ref={imageRef}
-                src={activePage.image_url} 
-                alt={`Aktif Sayfa ${activePage.page_number}`} 
-                className="max-h-[80vh] w-auto pointer-events-none"
-              />
+                className="max-h-[80vh] w-auto pointer-events-none relative shadow-md bg-white flex items-center justify-center min-w-[400px] min-h-[500px]"
+              >
+                {pdfUrl ? (
+                  <Document file={pdfUrl} loading={<Loader2 className="animate-spin text-slate-400" />}>
+                    <Page 
+                      pageNumber={activePage.page_number} 
+                      height={window.innerHeight * 0.8}
+                      renderTextLayer={false} 
+                      renderAnnotationLayer={false} 
+                    />
+                  </Document>
+                ) : (
+                  <div className="text-slate-400 p-20">PDF Bulunamadı</div>
+                )}
+              </div>
 
               {/* Varolan Hotspotlar */}
               {activePage.hotspots.map((hs) => (
