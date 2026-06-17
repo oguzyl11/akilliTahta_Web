@@ -9,6 +9,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Upload, Search, Filter, MoreVertical, Loader2, X, FileUp } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
+import { useRouter } from 'next/navigation';
 import api from '@/services/api';
 import toast from 'react-hot-toast';
 
@@ -23,6 +24,7 @@ interface Book {
 }
 
 export default function InstitutionBooksPage() {
+  const router = useRouter();
   const [books, setBooks] = useState<Book[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -34,6 +36,8 @@ export default function InstitutionBooksPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [previewBookUrl, setPreviewBookUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -179,7 +183,7 @@ export default function InstitutionBooksPage() {
                     size="sm"
                     onClick={() => {
                       const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000';
-                      window.open(`${baseUrl}/storage/${book.pdf_url}`, '_blank');
+                      setPreviewBookUrl(`${baseUrl}/storage/${book.pdf_url}`);
                     }}
                   >
                     Önizle
@@ -187,7 +191,7 @@ export default function InstitutionBooksPage() {
                   <Button 
                     fullWidth 
                     size="sm"
-                    onClick={() => window.location.href = `/institution/editor?bookId=${book.id}`}
+                    onClick={() => router.push(`/institution/editor?bookId=${book.id}`)}
                   >
                     Düzenle
                   </Button>
@@ -285,6 +289,34 @@ export default function InstitutionBooksPage() {
                   </Button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* PDF Önizleme Modalı */}
+      <AnimatePresence>
+        {previewBookUrl && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-8">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-slate-100 rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden"
+            >
+              <div className="bg-slate-800 p-4 flex justify-between items-center text-white shrink-0">
+                <h3 className="font-bold text-lg flex items-center gap-2"><BookOpen size={20} /> PDF Önizleme</h3>
+                <button onClick={() => setPreviewBookUrl(null)} className="hover:bg-white/20 p-2 rounded-lg transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="flex-1 w-full bg-slate-200">
+                <iframe 
+                  src={previewBookUrl} 
+                  className="w-full h-full border-none"
+                  title="PDF Preview"
+                />
+              </div>
             </motion.div>
           </div>
         )}
