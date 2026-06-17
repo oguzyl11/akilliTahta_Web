@@ -6,16 +6,28 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlayCircle, HelpCircle, Link as LinkIcon, Save, X, Loader2, ChevronLeft, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui';
 import api from '@/services/api';
 import toast from 'react-hot-toast';
-import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// react-pdf uses pdfjs-dist which requires browser APIs (DOMMatrix, canvas, etc.)
+// Dynamic import prevents SSR evaluation
+const Document = dynamic(
+  () => import('react-pdf').then((mod) => {
+    mod.pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${mod.pdfjs.version}/build/pdf.worker.min.mjs`;
+    return mod.Document;
+  }),
+  { ssr: false, loading: () => <Loader2 className="animate-spin text-slate-400" /> }
+);
+const PDFPage = dynamic(
+  () => import('react-pdf').then((mod) => mod.Page),
+  { ssr: false }
+);
 
 interface Hotspot {
   id: string | number;
@@ -170,7 +182,7 @@ export default function InstitutionEditorPage() {
               {pdfUrl ? (
                 <div className="absolute inset-0 origin-top flex items-start justify-center scale-[0.3]">
                   <Document file={pdfUrl}>
-                    <Page pageNumber={page.page_number} width={800} renderTextLayer={false} renderAnnotationLayer={false} />
+                    <PDFPage pageNumber={page.page_number} width={800} renderTextLayer={false} renderAnnotationLayer={false} />
                   </Document>
                 </div>
               ) : (
@@ -207,9 +219,9 @@ export default function InstitutionEditorPage() {
               >
                 {pdfUrl ? (
                   <Document file={pdfUrl} loading={<Loader2 className="animate-spin text-slate-400" />}>
-                    <Page 
+                    <PDFPage 
                       pageNumber={activePage.page_number} 
-                      height={window.innerHeight * 0.8}
+                      height={typeof window !== 'undefined' ? window.innerHeight * 0.8 : 700}
                       renderTextLayer={false} 
                       renderAnnotationLayer={false} 
                     />
