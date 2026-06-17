@@ -28,7 +28,12 @@ interface BookPage {
   hotspots: Hotspot[];
 }
 
+import { useSearchParams } from 'next/navigation';
+
 export default function InstitutionEditorPage() {
+  const searchParams = useSearchParams();
+  const bookId = searchParams.get('bookId') || 'latest';
+
   const [pages, setPages] = useState<BookPage[]>([]);
   const [activePage, setActivePage] = useState<BookPage | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,10 +49,10 @@ export default function InstitutionEditorPage() {
   const [hotspotType, setHotspotType] = useState<'video' | 'question' | 'link'>('video');
 
   useEffect(() => {
-    // Veritabanındaki en son eklenen kitabı (seeder ile oluşturduğumuz) çekiyoruz
+    // Veritabanındaki kitabı çekiyoruz
     const fetchEditorData = async () => {
       try {
-        const response = await api.get('/editor/books/latest/pages');
+        const response = await api.get(`/editor/books/${bookId}/pages`);
         if (response.data?.status === 'success') {
           const fetchedPages = response.data.data.pages;
           setPages(fetchedPages);
@@ -61,7 +66,7 @@ export default function InstitutionEditorPage() {
       }
     };
     fetchEditorData();
-  }, []);
+  }, [bookId]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!imageRef.current) return;

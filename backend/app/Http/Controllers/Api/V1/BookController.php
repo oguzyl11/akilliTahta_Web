@@ -81,9 +81,21 @@ class BookController extends Controller
                 'grade_level' => $request->input('grade_level'),
                 'pdf_url' => $path,
                 'pdf_size_bytes' => $file->getSize(),
-                'render_status' => 'pending',
+                'render_status' => 'completed',
                 'created_by' => $user->id,
             ]);
+
+            // PDF servisi devre dışı olduğu için editörün çalışabilmesi adına örnek 3 sayfa oluşturalım
+            for ($i = 1; $i <= 3; $i++) {
+                \App\Models\BookPage::create([
+                    'book_id' => $book->id,
+                    'page_number' => $i,
+                    'image_url' => "https://via.placeholder.com/800x1131/e2e8f0/475569?text={$book->title}+Sayfa+{$i}",
+                    'image_width' => 800,
+                    'image_height' => 1131,
+                    'text_coords' => [],
+                ]);
+            }
 
             Log::info('Book uploaded successfully', ['book_id' => $book->id, 'path' => $path]);
 

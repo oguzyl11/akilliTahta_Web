@@ -19,6 +19,7 @@ interface Book {
   grade_level: number;
   pdf_size_bytes: number;
   render_status: string;
+  pdf_url?: string;
 }
 
 export default function InstitutionBooksPage() {
@@ -172,8 +173,24 @@ export default function InstitutionBooksPage() {
                   )}
                 </div>
                 <div className="flex gap-2">
-                  <Button fullWidth variant="outline" size="sm">Önizle</Button>
-                  <Button fullWidth size="sm">Düzenle</Button>
+                  <Button 
+                    fullWidth 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8000';
+                      window.open(`${baseUrl}/storage/${book.pdf_url}`, '_blank');
+                    }}
+                  >
+                    Önizle
+                  </Button>
+                  <Button 
+                    fullWidth 
+                    size="sm"
+                    onClick={() => window.location.href = `/institution/editor?bookId=${book.id}`}
+                  >
+                    Düzenle
+                  </Button>
                 </div>
               </div>
             </motion.div>
