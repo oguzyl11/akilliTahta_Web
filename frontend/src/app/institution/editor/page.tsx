@@ -8,7 +8,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlayCircle, HelpCircle, Link as LinkIcon, Save, X, Loader2, ChevronLeft, Image as ImageIcon } from 'lucide-react';
+import { PlayCircle, HelpCircle, Link as LinkIcon, Save, X, Loader2, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui';
 import api from '@/services/api';
 import toast from 'react-hot-toast';
@@ -184,6 +184,16 @@ export default function InstitutionEditorPage() {
     }
   };
 
+  const currentIndex = pages.findIndex(p => p.id === activePage?.id);
+  const handlePrevPage = () => {
+    if (currentIndex > 0) setActivePage(pages[currentIndex - 1]);
+    setCurrentBox(null);
+  };
+  const handleNextPage = () => {
+    if (currentIndex < pages.length - 1) setActivePage(pages[currentIndex + 1]);
+    setCurrentBox(null);
+  };
+
   if (isLoading) {
     return (
       <div className="h-[calc(100vh-100px)] flex items-center justify-center">
@@ -195,34 +205,9 @@ export default function InstitutionEditorPage() {
   const pdfUrl = pdfBlobUrl;
 
   return (
-    <div className="flex h-[calc(100vh-120px)] -mx-4 -mt-2">
-      {/* Sol Panel: Thumbnails */}
-      <div className="w-64 bg-slate-50 border-r border-slate-200 overflow-y-auto flex flex-col p-4 gap-4">
-        <h2 className="font-bold text-slate-800 text-sm mb-2">Sayfalar</h2>
-        {pages.map((page) => (
-          <div 
-            key={page.id}
-            onClick={() => { setActivePage(page); setCurrentBox(null); }}
-            className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all ${
-              activePage?.id === page.id ? 'border-indigo-500 shadow-md scale-105' : 'border-transparent hover:border-slate-300'
-            }`}
-          >
-            <div className="relative pt-[141%] bg-slate-200 flex items-center justify-center overflow-hidden">
-              {page.image_url ? (
-                <img src={page.image_url} alt={`Sayfa ${page.page_number}`} className="absolute inset-0 w-full h-full object-cover" />
-              ) : (
-                <ImageIcon className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-400" />
-              )}
-              <div className="absolute bottom-0 inset-x-0 bg-black/50 text-white text-[10px] text-center py-1 z-10">
-                Sayfa {page.page_number}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
+    <div className="flex h-[calc(100vh-120px)] -mx-4 -mt-2 relative">
       {/* Orta Panel: Editör Canvas */}
-      <div className="flex-1 bg-slate-100 overflow-auto relative p-8 flex justify-center items-start">
+      <div className="flex-1 bg-slate-100 overflow-auto relative p-8 flex justify-center items-start pb-24">
         {activePage ? (
           <div className="relative shadow-2xl bg-white max-w-full">
             {/* Araç İpuçları */}
@@ -300,6 +285,31 @@ export default function InstitutionEditorPage() {
           </div>
         )}
       </div>
+
+      {/* Sayfalama (Pagination) Kontrolleri */}
+      {pages.length > 0 && activePage && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white px-6 py-3 rounded-full shadow-2xl border border-slate-200 flex items-center gap-6 z-40">
+          <button 
+            onClick={handlePrevPage}
+            disabled={currentIndex === 0}
+            className="p-2 rounded-full hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronLeft size={24} className="text-slate-700" />
+          </button>
+          
+          <div className="text-sm font-bold text-slate-600 min-w-[120px] text-center">
+            Sayfa {activePage.page_number} <span className="font-normal text-slate-400">/ {pages.length}</span>
+          </div>
+
+          <button 
+            onClick={handleNextPage}
+            disabled={currentIndex === pages.length - 1}
+            className="p-2 rounded-full hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronRight size={24} className="text-slate-700" />
+          </button>
+        </div>
+      )}
 
       {/* Hotspot Modal */}
       <AnimatePresence>
